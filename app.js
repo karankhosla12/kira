@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://your-worker-url";
+const API_BASE_URL = "https://tarks.karankhosla99.workers.dev";
 
 // DOM Elements
 const authSection = document.getElementById("auth-section");
