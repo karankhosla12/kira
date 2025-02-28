@@ -7,17 +7,30 @@ const loginForm = document.getElementById("login-form");
 const signupForm = document.getElementById("signup-form");
 const logoutButton = document.getElementById("logout-button");
 const usernameSpan = document.getElementById("username");
-const taskInput = document.getElementById("task-input");
+const updateUserButton = document.getElementById("update-user-button");
+const deleteUserButton = document.getElementById("delete-user-button");
+const projectNameInput = document.getElementById("project-name");
+const projectDescriptionInput = document.getElementById("project-description");
+const addProjectButton = document.getElementById("add-project-button");
+const projectList = document.getElementById("project-list");
+const taskNameInput = document.getElementById("task-name");
+const taskDescriptionInput = document.getElementById("task-description");
+const taskAssignedToInput = document.getElementById("task-assigned-to");
+const taskDeadlineInput = document.getElementById("task-deadline");
+const taskProjectSelect = document.getElementById("task-project");
 const addTaskButton = document.getElementById("add-task-button");
 const taskList = document.getElementById("task-list");
+
+let currentUser = null;
 
 // Check login status
 function checkLogin() {
   const userCookie = document.cookie.split("; ").find(row => row.startsWith("user="));
   if (userCookie) {
-    const username = userCookie.split("=")[1];
-    showDashboard(username);
-    loadTasks(username);
+    currentUser = userCookie.split("=")[1];
+    showDashboard(currentUser);
+    loadProjects();
+    loadTasks();
   } else {
     showAuthSection();
   }
@@ -36,10 +49,38 @@ function showDashboard(username) {
   usernameSpan.textContent = username;
 }
 
+// Load Projects
+function loadProjects() {
+  fetch(`${API_BASE_URL}/projects`)
+    .then(response => response.json())
+    .then(projects => {
+      projectList.innerHTML = "";
+      projects.forEach(project => addProjectToDOM(project));
+      updateProjectDropdown(projects);
+    });
+}
+
+// Add Project to DOM
+function addProjectToDOM(project) {
+  const li = document.createElement("li");
+  li.textContent = `${project.project_name}: ${project.project_description}`;
+  projectList.appendChild(li);
+}
+
+// Update Project Dropdown
+function updateProjectDropdown(projects) {
+  taskProjectSelect.innerHTML = '<option value="">Select Project</option>';
+  projects.forEach(project => {
+    const option = document.createElement("option");
+    option.value = project.projectid;
+    option.textContent = project.project_name;
+    taskProjectSelect.appendChild(option);
+  });
+}
+
 // Load Tasks
-function loadTasks(username) {
-  // Fetch tasks from the API (you need to implement this endpoint)
-  fetch(`${API_BASE_URL}/tasks/assigned/${username}`)
+function loadTasks() {
+  fetch(`${API_BASE_URL}/tasks/assigned/${currentUser}`)
     .then(response => response.json())
     .then(tasks => {
       taskList.innerHTML = "";
@@ -50,41 +91,8 @@ function loadTasks(username) {
 // Add Task to DOM
 function addTaskToDOM(task) {
   const li = document.createElement("li");
-  li.textContent = task.taskname;
-  if (task.status === "completed") {
-    li.classList.add("completed");
-  }
-
-  const deleteButton = document.createElement("button");
-  deleteButton.textContent = "Delete";
-  deleteButton.addEventListener("click", () => deleteTask(task.taskid));
-
-  li.appendChild(deleteButton);
+  li.textContent = `${task.taskname}: ${task.taskdescription} (Deadline: ${task.deadline})`;
   taskList.appendChild(li);
-}
-
-// Add Task
-addTaskButton.addEventListener("click", () => {
-  const taskName = taskInput.value.trim();
-  if (taskName) {
-    const username = document.cookie.split("; ").find(row => row.startsWith("user=")).split("=")[1];
-    fetch(`${API_BASE_URL}/tasks`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ taskname: taskName, assigned_to: username }),
-    })
-      .then(response => response.json())
-      .then(task => {
-        addTaskToDOM(task);
-        taskInput.value = "";
-      });
-  }
-});
-
-// Delete Task
-function deleteTask(taskId) {
-  fetch(`${API_BASE_URL}/tasks/${taskId}`, { method: "DELETE" })
-    .then(() => loadTasks(usernameSpan.textContent));
 }
 
 // Logout
