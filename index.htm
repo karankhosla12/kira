@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            checkAuthStatus();
+        });
+
+        async function loginOrSignup(isSignup) {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            if (!username || !password) {
+                alert("Please enter both username and password.");
+                return;
+            }
+
+            const endpoint = isSignup ? "/users" : `/users/${username}`;
+            const method = isSignup ? "POST" : "GET";
+
+            const response = await fetch(endpoint, {
+                method: method,
+                headers: { "Content-Type": "application/json" },
+                body: isSignup ? JSON.stringify({ username, password }) : null
+            });
+
+            if (response.ok) {
+                document.cookie = "auth_status=true; path=/";
+                document.getElementById("auth-section").style.display = "none";
+                document.getElementById("actions").style.display = "block";
+            } else {
+                alert("Invalid login or signup failed.");
+            }
+        }
+
+        function checkAuthStatus() {
+            const cookies = document.cookie.split("; ");
+            const isAuthenticated = cookies.some(cookie => cookie.startsWith("auth_status=true"));
+            document.getElementById("auth-section").style.display = isAuthenticated ? "none" : "block";
+            document.getElementById("actions").style.display = isAuthenticated ? "block" : "none";
+        }
+
+        async function logout() {
+            document.cookie = "auth_status=false; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+            document.getElementById("auth-section").style.display = "block";
+            document.getElementById("actions").style.display = "none";
+        }
+
+        async function performAction(action) {
+            let endpoint = "";
+            let method = "";
+
+            switch (action) {
+                case "createUser":
+                    endpoint = "/users";
+                    method = "POST";
+                    break;
+                case "deleteUser":
+                    const username = prompt("Enter username to delete:");
+                    if (!username) return;
+                    endpoint = `/users/${username}`;
+                    method = "DELETE";
+                    break;
+                case "createProject":
+                    endpoint = "/projects";
+                    method = "POST";
+                    break;
+                case "deleteProject":
+                    const projectId = prompt("Enter project ID to delete:");
+                    if (!projectId) return;
+                    endpoint = `/projects/${projectId}`;
+                    method = "DELETE";
+                    break;
+                case "createTask":
+                    endpoint = "/tasks";
+                    method = "POST";
+                    break;
+                case "deleteTask":
+                    const taskId = prompt("Enter task ID to delete:");
+                    if (!taskId) return;
+                    endpoint = `/tasks/${taskId}`;
+                    method = "DELETE";
+                    break;
+                case "viewTasks":
+                    endpoint = "/tasks";
+                    method = "GET";
+                    break;
+                default:
+                    alert("Invalid action.");
+                    return;
+            }
+
+            const response = await fetch(endpoint, { method });
+            const data = await response.json();
+            alert(JSON.stringify(data, null, 2));
+        }
+    </script>
+</head>
+<body>
+    <h1>Task Manager</h1>
+
+    <div id="auth-section">
+        <h2>Login or Sign Up</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="loginOrSignup(false)">Login</button>
+        <button onclick="loginOrSignup(true)">Sign Up</button>
+    </div>
+
+    <div id="actions" style="display: none;">
+        <h2>Actions</h2>
+        <button onclick="performAction('createUser')">Create User</button>
+        <button onclick="performAction('deleteUser')">Delete User</button>
+        <button onclick="performAction('createProject')">Create Project</button>
+        <button onclick="performAction('deleteProject')">Delete Project</button>
+        <button onclick="performAction('createTask')">Create Task</button>
+        <button onclick="performAction('deleteTask')">Delete Task</button>
+        <button onclick="performAction('viewTasks')">View Tasks</button>
+        <button onclick="logout()">Logout</button>
+    </div>
+</body>
+</html>
