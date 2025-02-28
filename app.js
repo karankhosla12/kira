@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://your-worker-url";
+const API_BASE_URL = "https://tarks.karankhosla99.workers.dev";
 
 // DOM Elements
 const authSection = document.getElementById("auth-section");
@@ -21,6 +21,10 @@ const taskProjectSelect = document.getElementById("task-project");
 const taskStatusSelect = document.getElementById("task-status");
 const addTaskButton = document.getElementById("add-task-button");
 const viewAllTasksButton = document.getElementById("view-all-tasks-button");
+const viewTasksAssignedToUserButton = document.getElementById("view-tasks-assigned-to-user");
+const viewTasksAssignedByUserButton = document.getElementById("view-tasks-assigned-by-user");
+const viewTaskDetailsButton = document.getElementById("view-task-details");
+const updateTaskButton = document.getElementById("update-task-button");
 const filterByProjectSelect = document.getElementById("filter-by-project");
 const taskList = document.getElementById("task-list");
 
@@ -131,9 +135,6 @@ logoutButton.addEventListener("click", () => {
   showAuthSection();
 });
 
-// Check login status on page load
-checkLogin();
-
 // Additional Task Management Functions
 
 // Get Tasks Assigned to a User
@@ -171,22 +172,22 @@ async function updateTask(taskId, updatedTask) {
 }
 
 // Add Event Listeners for Additional Actions
-document.getElementById("view-tasks-assigned-to-user").addEventListener("click", () => {
+viewTasksAssignedToUserButton.addEventListener("click", () => {
   const userEmail = prompt("Enter user email to view assigned tasks:");
   if (userEmail) getTasksAssignedToUser(userEmail);
 });
 
-document.getElementById("view-tasks-assigned-by-user").addEventListener("click", () => {
+viewTasksAssignedByUserButton.addEventListener("click", () => {
   const userEmail = prompt("Enter user email to view tasks assigned by:");
   if (userEmail) getTasksAssignedByUser(userEmail);
 });
 
-document.getElementById("view-task-details").addEventListener("click", () => {
+viewTaskDetailsButton.addEventListener("click", () => {
   const taskId = prompt("Enter task ID to view details:");
   if (taskId) getTask(taskId);
 });
 
-document.getElementById("update-task-button").addEventListener("click", () => {
+updateTaskButton.addEventListener("click", () => {
   const taskId = prompt("Enter task ID to update:");
   if (taskId) {
     const updatedTask = {
@@ -201,3 +202,6 @@ document.getElementById("update-task-button").addEventListener("click", () => {
     updateTask(taskId, updatedTask);
   }
 });
+
+// Check login status on page load
+checkLogin();
