@@ -1,262 +1,150 @@
 const API_BASE_URL = "https://tarks.karankhosla99.workers.dev";
-
-// DOM Elements
-const authSection = document.getElementById("auth-section");
-const dashboardSection = document.getElementById("dashboard-section");
-const loginForm = document.getElementById("login-form");
-const signupForm = document.getElementById("signup-form");
-const logoutButton = document.getElementById("logout-button");
-const usernameSpan = document.getElementById("username");
-const updateUserButton = document.getElementById("update-user-button");
-const deleteUserButton = document.getElementById("delete-user-button");
-const projectNameInput = document.getElementById("project-name");
-const projectDescriptionInput = document.getElementById("project-description");
-const addProjectButton = document.getElementById("add-project-button");
-const projectList = document.getElementById("project-list");
-const taskNameInput = document.getElementById("task-name");
-const taskDescriptionInput = document.getElementById("task-description");
-const taskAssignedToInput = document.getElementById("task-assigned-to");
-const taskDeadlineInput = document.getElementById("task-deadline");
-const taskProjectSelect = document.getElementById("task-project");
-const taskStatusSelect = document.getElementById("task-status");
-const addTaskButton = document.getElementById("add-task-button");
-const viewAllTasksButton = document.getElementById("view-all-tasks-button");
-const viewTasksAssignedToUserButton = document.getElementById("view-tasks-assigned-to-user");
-const viewTasksAssignedByUserButton = document.getElementById("view-tasks-assigned-by-user");
-const viewTaskDetailsButton = document.getElementById("view-task-details");
-const updateTaskButton = document.getElementById("update-task-button");
-const filterByProjectSelect = document.getElementById("filter-by-project");
-const taskList = document.getElementById("task-list");
-
 let currentUser = null;
 
-// Check login status
-function checkLogin() {
-  const userCookie = document.cookie.split("; ").find(row => row.startsWith("user="));
-  if (userCookie) {
-    currentUser = userCookie.split("=")[1];
-    showDashboard(currentUser);
-    loadProjects();
-    loadTasks();
-  } else {
-    showAuthSection();
-  }
+// Check Authentication Status
+document.addEventListener("DOMContentLoaded", checkAuthStatus);
+
+// Login or Sign Up
+async function loginOrSignup(isSignup) {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    if (!email || !password) {
+        alert("Enter email and password");
+        return;
+    }
+
+    const endpoint = isSignup ? "/users" : `/users`;
+    const method = isSignup ? "POST" : "POST"; 
+
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email_Id: email, password })
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+        localStorage.setItem("user", email);
+        currentUser = email;
+        document.getElementById("auth-section").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        loadTasks();
+        loadProjects();
+    } else {
+        alert(data.error || "Login failed");
+    }
 }
 
-// Show Auth Section
-function showAuthSection() {
-  authSection.classList.remove("hidden");
-  dashboardSection.classList.add("hidden");
+// Logout
+function logout() {
+    localStorage.removeItem("user");
+    currentUser = null;
+    document.getElementById("auth-section").style.display = "block";
+    document.getElementById("dashboard").style.display = "none";
 }
 
-// Show Dashboard Section
-function showDashboard(email) {
-  authSection.classList.add("hidden");
-  dashboardSection.classList.remove("hidden");
-  usernameSpan.textContent = email;
+// Check Authentication
+function checkAuthStatus() {
+    const user = localStorage.getItem("user");
+    if (user) {
+        currentUser = user;
+        document.getElementById("auth-section").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        loadTasks();
+        loadProjects();
+    }
 }
 
-// Login Functionality
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = document.getElementById("login-email").value;
-  const password = document.getElementById("login-password").value;
+// Load Tasks
+async function loadTasks() {
+    const response = await fetch(`${API_BASE_URL}/tasks/assigned/${currentUser}`);
+    const tasks = await response.json();
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email_Id: email, password: password }),
+    const taskList = document.getElementById("taskList");
+    taskList.innerHTML = "";
+
+    tasks.forEach(task => {
+        const li = document.createElement("li");
+        li.innerText = `${task.taskname} - ${task.taskdescription} (Due: ${task.deadline})`;
+        const btn = document.createElement("button");
+        btn.innerText = "Delete";
+        btn.onclick = () => deleteTask(task.taskid);
+        li.appendChild(btn);
+        taskList.appendChild(li);
+    });
+}
+
+// Create Task
+async function createTask() {
+    const taskname = document.getElementById("taskName").value;
+    const taskdescription = document.getElementById("taskDesc").value;
+    const deadline = document.getElementById("taskDeadline").value;
+
+    const response = await fetch(`${API_BASE_URL}/tasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ taskname, taskdescription, assigned_to: currentUser, assigned_by: currentUser, deadline, projectid: 1, status: 0 })
     });
 
     if (response.ok) {
-      const user = await response.json();
-      // Set a cookie with the user's email
-      document.cookie = `user=${email}; path=/; max-age=3600`; // Expires in 1 hour
-      showDashboard(email);
+        loadTasks();
     } else {
-      alert("Invalid email or password.");
+        alert("Failed to create task");
     }
-  } catch (error) {
-    console.error("Login failed:", error);
-    alert("An error occurred. Please try again.");
-  }
-});
+}
 
-// Signup Functionality
-signupForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const username = document.getElementById("signup-username").value;
-  const password = document.getElementById("signup-password").value;
-  const email = document.getElementById("signup-email").value;
-  const phone = document.getElementById("signup-phone").value;
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/users`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, email_Id: email, phoneNumber: phone }),
-    });
-
+// Delete Task
+async function deleteTask(taskId) {
+    const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, { method: "DELETE" });
     if (response.ok) {
-      alert("Signup successful! Please log in.");
-      loginForm.reset();
-      signupForm.reset();
+        loadTasks();
     } else {
-      alert("Signup failed.");
+        alert("Failed to delete task");
     }
-  } catch (error) {
-    console.error("Signup failed:", error);
-    alert("An error occurred. Please try again.");
-  }
-});
-
-// Logout Functionality
-logoutButton.addEventListener("click", () => {
-  document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
-  showAuthSection();
-});
+}
 
 // Load Projects
-function loadProjects() {
-  fetch(`${API_BASE_URL}/projects`)
-    .then(response => response.json())
-    .then(projects => {
-      projectList.innerHTML = "";
-      projects.forEach(project => addProjectToDOM(project));
-      updateProjectDropdowns(projects);
+async function loadProjects() {
+    const response = await fetch(`${API_BASE_URL}/projects`);
+    const projects = await response.json();
+
+    const projectList = document.getElementById("projectList");
+    projectList.innerHTML = "";
+
+    projects.forEach(project => {
+        const li = document.createElement("li");
+        li.innerText = `${project.project_name}`;
+        const btn = document.createElement("button");
+        btn.innerText = "Delete";
+        btn.onclick = () => deleteProject(project.projectid);
+        li.appendChild(btn);
+        projectList.appendChild(li);
     });
 }
 
-// Add Project to DOM
-function addProjectToDOM(project) {
-  const li = document.createElement("li");
-  li.textContent = `${project.project_name}: ${project.project_description}`;
-  projectList.appendChild(li);
-}
-
-// Update Project Dropdowns
-function updateProjectDropdowns(projects) {
-  taskProjectSelect.innerHTML = '<option value="">Select Project</option>';
-  filterByProjectSelect.innerHTML = '<option value="">Filter by Project</option>';
-  projects.forEach(project => {
-    const option = document.createElement("option");
-    option.value = project.projectid;
-    option.textContent = project.project_name;
-    taskProjectSelect.appendChild(option.cloneNode(true));
-    filterByProjectSelect.appendChild(option);
-  });
-}
-
-// Load All Tasks
-function loadTasks() {
-  fetch(`${API_BASE_URL}/tasks/assigned/${currentUser}`)
-    .then(response => response.json())
-    .then(tasks => {
-      taskList.innerHTML = "";
-      tasks.forEach(task => addTaskToDOM(task));
+// Create Project
+async function createProject() {
+    const projectName = document.getElementById("projectName").value;
+    const response = await fetch(`${API_BASE_URL}/projects`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ project_name: projectName, project_description: "A new project" })
     });
+
+    if (response.ok) {
+        loadProjects();
+    } else {
+        alert("Failed to create project");
+    }
 }
 
-// Load Tasks by Project
-function loadTasksByProject(projectId) {
-  fetch(`${API_BASE_URL}/tasks?projectid=${projectId}`)
-    .then(response => response.json())
-    .then(tasks => {
-      taskList.innerHTML = "";
-      tasks.forEach(task => addTaskToDOM(task));
-    });
+// Delete Project
+async function deleteProject(projectId) {
+    const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, { method: "DELETE" });
+    if (response.ok) {
+        loadProjects();
+    } else {
+        alert("Failed to delete project");
+    }
 }
-
-// Add Task to DOM
-function addTaskToDOM(task) {
-  const li = document.createElement("li");
-  li.textContent = `${task.taskname}: ${task.taskdescription} (Deadline: ${task.deadline}, Status: ${task.status})`;
-  taskList.appendChild(li);
-}
-
-// View All Tasks
-viewAllTasksButton.addEventListener("click", () => {
-  loadTasks();
-});
-
-// Filter Tasks by Project
-filterByProjectSelect.addEventListener("change", (e) => {
-  const projectId = e.target.value;
-  if (projectId) {
-    loadTasksByProject(projectId);
-  } else {
-    loadTasks();
-  }
-});
-
-// Additional Task Management Functions
-
-// Get Tasks Assigned to a User
-async function getTasksAssignedToUser(userEmail) {
-  const response = await fetch(`${API_BASE_URL}/tasks/assigned/${userEmail}`);
-  const tasks = await response.json();
-  taskList.innerHTML = "";
-  tasks.forEach(task => addTaskToDOM(task));
-}
-
-// Get Tasks Assigned by a User
-async function getTasksAssignedByUser(userEmail) {
-  const response = await fetch(`${API_BASE_URL}/tasks/assigned_by/${userEmail}`);
-  const tasks = await response.json();
-  taskList.innerHTML = "";
-  tasks.forEach(task => addTaskToDOM(task));
-}
-
-// Get Task by ID
-async function getTask(taskId) {
-  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`);
-  const task = await response.json();
-  alert(JSON.stringify(task, null, 2));
-}
-
-// Update Task
-async function updateTask(taskId, updatedTask) {
-  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(updatedTask),
-  });
-  const result = await response.json();
-  alert(JSON.stringify(result, null, 2));
-}
-
-// Add Event Listeners for Additional Actions
-viewTasksAssignedToUserButton.addEventListener("click", () => {
-  const userEmail = prompt("Enter user email to view assigned tasks:");
-  if (userEmail) getTasksAssignedToUser(userEmail);
-});
-
-viewTasksAssignedByUserButton.addEventListener("click", () => {
-  const userEmail = prompt("Enter user email to view tasks assigned by:");
-  if (userEmail) getTasksAssignedByUser(userEmail);
-});
-
-viewTaskDetailsButton.addEventListener("click", () => {
-  const taskId = prompt("Enter task ID to view details:");
-  if (taskId) getTask(taskId);
-});
-
-updateTaskButton.addEventListener("click", () => {
-  const taskId = prompt("Enter task ID to update:");
-  if (taskId) {
-    const updatedTask = {
-      taskname: prompt("Enter updated task name:"),
-      taskdescription: prompt("Enter updated task description:"),
-      assigned_to: prompt("Enter updated assigned to (email):"),
-      assigned_by: prompt("Enter updated assigned by (email):"),
-      deadline: prompt("Enter updated deadline (YYYY-MM-DD):"),
-      projectid: prompt("Enter updated project ID:"),
-      status: prompt("Enter updated task status (0=New, 1=In Progress, 2=Completed):"),
-    };
-    updateTask(taskId, updatedTask);
-  }
-});
-
-// Check login status on page load
-checkLogin();
