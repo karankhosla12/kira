@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Futuristic Task Manager</title>
+    <title>Task Manager</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -33,6 +33,25 @@
             <input type="date" id="taskDeadline">
             <button onclick="createTask()">Add Task</button>
             <ul id="taskList"></ul>
+        </div>
+
+        <!-- Edit Task Modal -->
+        <div id="editTaskModal" class="modal">
+            <div class="modal-content">
+                <h2>Edit Task</h2>
+                <input type="hidden" id="editTaskId">
+                <input type="text" id="editTaskName" placeholder="Task Name">
+                <input type="text" id="editTaskDesc" placeholder="Task Description">
+                <input type="date" id="editTaskDeadline">
+                <select id="editTaskStatus">
+                    <option value="0">Open</option>
+                    <option value="1">In Progress</option>
+                    <option value="2">Closed</option>
+                </select>
+                <select id="assignTo"></select>
+                <button onclick="updateTask()">Update Task</button>
+                <button onclick="closeEditTaskModal()">Cancel</button>
+            </div>
         </div>
     </div>
     
