@@ -1,204 +1,203 @@
-const API_BASE_URL = "https://tarks.karankhosla99.workers.dev";
+const API_BASE_URL = "https://your-worker-url";
 
 // DOM Elements
 const authSection = document.getElementById("auth-section");
 const dashboardSection = document.getElementById("dashboard-section");
-const usernameDisplay = document.getElementById("username-display");
+const loginForm = document.getElementById("login-form");
+const signupForm = document.getElementById("signup-form");
+const logoutButton = document.getElementById("logout-button");
+const usernameSpan = document.getElementById("username");
+const updateUserButton = document.getElementById("update-user-button");
+const deleteUserButton = document.getElementById("delete-user-button");
+const projectNameInput = document.getElementById("project-name");
+const projectDescriptionInput = document.getElementById("project-description");
+const addProjectButton = document.getElementById("add-project-button");
+const projectList = document.getElementById("project-list");
+const taskNameInput = document.getElementById("task-name");
+const taskDescriptionInput = document.getElementById("task-description");
+const taskAssignedToInput = document.getElementById("task-assigned-to");
+const taskDeadlineInput = document.getElementById("task-deadline");
+const taskProjectSelect = document.getElementById("task-project");
+const taskStatusSelect = document.getElementById("task-status");
+const addTaskButton = document.getElementById("add-task-button");
+const viewAllTasksButton = document.getElementById("view-all-tasks-button");
+const filterByProjectSelect = document.getElementById("filter-by-project");
+const taskList = document.getElementById("task-list");
 
-// Check authentication status on page load
-document.addEventListener("DOMContentLoaded", function () {
-  checkAuthStatus();
-});
+let currentUser = null;
 
-// Login or Signup
-async function loginOrSignup(isSignup) {
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-
-  if (!username || !password) {
-    alert("Please enter both username and password.");
-    return;
-  }
-
-  const endpoint = isSignup ? `${API_BASE_URL}/users` : `${API_BASE_URL}/login`;
-  const method = isSignup ? "POST" : "POST";
-
-  try {
-    const response = await fetch(endpoint, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      document.cookie = `auth_status=true; username=${username}; path=/`;
-      showDashboard(username);
-    } else {
-      alert(isSignup ? "Signup failed." : "Invalid login.");
-    }
-  } catch (error) {
-    console.error("Error:", error);
-    alert("An error occurred. Please try again.");
+// Check login status
+function checkLogin() {
+  const userCookie = document.cookie.split("; ").find(row => row.startsWith("user="));
+  if (userCookie) {
+    currentUser = userCookie.split("=")[1];
+    showDashboard(currentUser);
+    loadProjects();
+    loadTasks();
+  } else {
+    showAuthSection();
   }
 }
 
-// Show Dashboard
-function showDashboard(username) {
-  authSection.classList.add("hidden");
-  dashboardSection.classList.remove("hidden");
-  usernameDisplay.textContent = username;
-}
-
-// Logout
-function logout() {
-  document.cookie = "auth_status=; username=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+// Show Auth Section
+function showAuthSection() {
   authSection.classList.remove("hidden");
   dashboardSection.classList.add("hidden");
 }
 
-// Check Authentication Status
-function checkAuthStatus() {
-  const cookies = document.cookie.split("; ");
-  const authStatus = cookies.find((cookie) => cookie.startsWith("auth_status=true"));
-  const username = cookies.find((cookie) => cookie.startsWith("username="))?.split("=")[1];
-
-  if (authStatus && username) {
-    showDashboard(username);
-  } else {
-    authSection.classList.remove("hidden");
-    dashboardSection.classList.add("hidden");
-  }
+// Show Dashboard Section
+function showDashboard(email) {
+  authSection.classList.add("hidden");
+  dashboardSection.classList.remove("hidden");
+  usernameSpan.textContent = email;
 }
 
-// Perform Actions (Create, Delete, View, Filter, Update)
-async function performAction(action) {
-  let endpoint = "";
-  let method = "";
-  let body = null;
-
-  switch (action) {
-    case "createUser":
-      const newUsername = prompt("Enter new username:");
-      const newPassword = prompt("Enter password:");
-      if (!newUsername || !newPassword) return;
-      endpoint = `${API_BASE_URL}/users`;
-      method = "POST";
-      body = JSON.stringify({ username: newUsername, password: newPassword });
-      break;
-    case "deleteUser":
-      const username = prompt("Enter username to delete:");
-      if (!username) return;
-      endpoint = `${API_BASE_URL}/users/${username}`;
-      method = "DELETE";
-      break;
-    case "createProject":
-      const projectName = prompt("Enter project name:");
-      const projectDescription = prompt("Enter project description:");
-      if (!projectName) return;
-      endpoint = `${API_BASE_URL}/projects`;
-      method = "POST";
-      body = JSON.stringify({ project_name: projectName, project_description: projectDescription });
-      break;
-    case "deleteProject":
-      const projectId = prompt("Enter project ID to delete:");
-      if (!projectId) return;
-      endpoint = `${API_BASE_URL}/projects/${projectId}`;
-      method = "DELETE";
-      break;
-    case "createTask":
-      const taskName = prompt("Enter task name:");
-      const taskDescription = prompt("Enter task description:");
-      const assignedTo = prompt("Assign task to (username):");
-      const assignedBy = prompt("Assigned by (your username):");
-      const deadline = prompt("Enter deadline (YYYY-MM-DD):");
-      const projectID = prompt("Enter project ID:");
-      const status = prompt("Enter task status (0=Pending, 1=In Progress, 2=Completed):");
-      if (!taskName || !assignedTo || !projectID) return;
-      endpoint = `${API_BASE_URL}/tasks`;
-      method = "POST";
-      body = JSON.stringify({
-        taskname: taskName,
-        taskdescription: taskDescription,
-        assigned_to: assignedTo,
-        assigned_by: assignedBy,
-        deadline: deadline,
-        projectid: projectID,
-        status: status,
-      });
-      break;
-    case "deleteTask":
-      const taskId = prompt("Enter task ID to delete:");
-      if (!taskId) return;
-      endpoint = `${API_BASE_URL}/tasks/${taskId}`;
-      method = "DELETE";
-      break;
-    case "viewTasks":
-      endpoint = `${API_BASE_URL}/tasks`;
-      method = "GET";
-      break;
-    case "filterTasksByProject":
-      const projectIdFilter = prompt("Enter project ID to filter tasks:");
-      if (!projectIdFilter) return;
-      endpoint = `${API_BASE_URL}/tasks?projectid=${projectIdFilter}`;
-      method = "GET";
-      break;
-    case "getTasksAssignedToUser":
-      const assignedToUser = prompt("Enter username to view assigned tasks:");
-      if (!assignedToUser) return;
-      endpoint = `${API_BASE_URL}/tasks/assigned/${assignedToUser}`;
-      method = "GET";
-      break;
-    case "getTasksAssignedByUser":
-      const assignedByUser = prompt("Enter username to view tasks assigned by:");
-      if (!assignedByUser) return;
-      endpoint = `${API_BASE_URL}/tasks/assigned_by/${assignedByUser}`;
-      method = "GET";
-      break;
-    case "getTask":
-      const taskIdView = prompt("Enter task ID to view:");
-      if (!taskIdView) return;
-      endpoint = `${API_BASE_URL}/tasks/${taskIdView}`;
-      method = "GET";
-      break;
-    case "updateTask":
-      const taskIdUpdate = prompt("Enter task ID to update:");
-      if (!taskIdUpdate) return;
-      const updatedTaskName = prompt("Enter updated task name:");
-      const updatedTaskDescription = prompt("Enter updated task description:");
-      const updatedAssignedTo = prompt("Enter updated assigned to (username):");
-      const updatedAssignedBy = prompt("Enter updated assigned by (username):");
-      const updatedDeadline = prompt("Enter updated deadline (YYYY-MM-DD):");
-      const updatedProjectID = prompt("Enter updated project ID:");
-      const updatedStatus = prompt("Enter updated task status (0=Pending, 1=In Progress, 2=Completed):");
-      endpoint = `${API_BASE_URL}/tasks/${taskIdUpdate}`;
-      method = "PUT";
-      body = JSON.stringify({
-        taskname: updatedTaskName,
-        taskdescription: updatedTaskDescription,
-        assigned_to: updatedAssignedTo,
-        assigned_by: updatedAssignedBy,
-        deadline: updatedDeadline,
-        projectid: updatedProjectID,
-        status: updatedStatus,
-      });
-      break;
-    default:
-      alert("Invalid action.");
-      return;
-  }
-
-  try {
-    const response = await fetch(endpoint, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: body ? body : null,
+// Load Projects
+function loadProjects() {
+  fetch(`${API_BASE_URL}/projects`)
+    .then(response => response.json())
+    .then(projects => {
+      projectList.innerHTML = "";
+      projects.forEach(project => addProjectToDOM(project));
+      updateProjectDropdowns(projects);
     });
-
-    const data = await response.json();
-    alert(JSON.stringify(data, null, 2));
-  } catch (error) {
-    console.error("Error:", error);
-    alert("An error occurred. Please try again.");
-  }
 }
+
+// Add Project to DOM
+function addProjectToDOM(project) {
+  const li = document.createElement("li");
+  li.textContent = `${project.project_name}: ${project.project_description}`;
+  projectList.appendChild(li);
+}
+
+// Update Project Dropdowns
+function updateProjectDropdowns(projects) {
+  taskProjectSelect.innerHTML = '<option value="">Select Project</option>';
+  filterByProjectSelect.innerHTML = '<option value="">Filter by Project</option>';
+  projects.forEach(project => {
+    const option = document.createElement("option");
+    option.value = project.projectid;
+    option.textContent = project.project_name;
+    taskProjectSelect.appendChild(option.cloneNode(true));
+    filterByProjectSelect.appendChild(option);
+  });
+}
+
+// Load All Tasks
+function loadTasks() {
+  fetch(`${API_BASE_URL}/tasks/assigned/${currentUser}`)
+    .then(response => response.json())
+    .then(tasks => {
+      taskList.innerHTML = "";
+      tasks.forEach(task => addTaskToDOM(task));
+    });
+}
+
+// Load Tasks by Project
+function loadTasksByProject(projectId) {
+  fetch(`${API_BASE_URL}/tasks?projectid=${projectId}`)
+    .then(response => response.json())
+    .then(tasks => {
+      taskList.innerHTML = "";
+      tasks.forEach(task => addTaskToDOM(task));
+    });
+}
+
+// Add Task to DOM
+function addTaskToDOM(task) {
+  const li = document.createElement("li");
+  li.textContent = `${task.taskname}: ${task.taskdescription} (Deadline: ${task.deadline}, Status: ${task.status})`;
+  taskList.appendChild(li);
+}
+
+// View All Tasks
+viewAllTasksButton.addEventListener("click", () => {
+  loadTasks();
+});
+
+// Filter Tasks by Project
+filterByProjectSelect.addEventListener("change", (e) => {
+  const projectId = e.target.value;
+  if (projectId) {
+    loadTasksByProject(projectId);
+  } else {
+    loadTasks();
+  }
+});
+
+// Logout
+logoutButton.addEventListener("click", () => {
+  document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  showAuthSection();
+});
+
+// Check login status on page load
+checkLogin();
+
+// Additional Task Management Functions
+
+// Get Tasks Assigned to a User
+async function getTasksAssignedToUser(userEmail) {
+  const response = await fetch(`${API_BASE_URL}/tasks/assigned/${userEmail}`);
+  const tasks = await response.json();
+  taskList.innerHTML = "";
+  tasks.forEach(task => addTaskToDOM(task));
+}
+
+// Get Tasks Assigned by a User
+async function getTasksAssignedByUser(userEmail) {
+  const response = await fetch(`${API_BASE_URL}/tasks/assigned_by/${userEmail}`);
+  const tasks = await response.json();
+  taskList.innerHTML = "";
+  tasks.forEach(task => addTaskToDOM(task));
+}
+
+// Get Task by ID
+async function getTask(taskId) {
+  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`);
+  const task = await response.json();
+  alert(JSON.stringify(task, null, 2));
+}
+
+// Update Task
+async function updateTask(taskId, updatedTask) {
+  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updatedTask),
+  });
+  const result = await response.json();
+  alert(JSON.stringify(result, null, 2));
+}
+
+// Add Event Listeners for Additional Actions
+document.getElementById("view-tasks-assigned-to-user").addEventListener("click", () => {
+  const userEmail = prompt("Enter user email to view assigned tasks:");
+  if (userEmail) getTasksAssignedToUser(userEmail);
+});
+
+document.getElementById("view-tasks-assigned-by-user").addEventListener("click", () => {
+  const userEmail = prompt("Enter user email to view tasks assigned by:");
+  if (userEmail) getTasksAssignedByUser(userEmail);
+});
+
+document.getElementById("view-task-details").addEventListener("click", () => {
+  const taskId = prompt("Enter task ID to view details:");
+  if (taskId) getTask(taskId);
+});
+
+document.getElementById("update-task-button").addEventListener("click", () => {
+  const taskId = prompt("Enter task ID to update:");
+  if (taskId) {
+    const updatedTask = {
+      taskname: prompt("Enter updated task name:"),
+      taskdescription: prompt("Enter updated task description:"),
+      assigned_to: prompt("Enter updated assigned to (email):"),
+      assigned_by: prompt("Enter updated assigned by (email):"),
+      deadline: prompt("Enter updated deadline (YYYY-MM-DD):"),
+      projectid: prompt("Enter updated project ID:"),
+      status: prompt("Enter updated task status (0=New, 1=In Progress, 2=Completed):"),
+    };
+    updateTask(taskId, updatedTask);
+  }
+});
