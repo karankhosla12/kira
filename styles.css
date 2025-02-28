@@ -1,56 +1,115 @@
 body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(to right, #4facfe, #00f2fe);
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #1f1c2c, #928dab);
+    color: #fff;
     text-align: center;
     margin: 0;
     padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .container {
     max-width: 600px;
-    margin: auto;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    margin-top: 50px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h1, h2 {
+    color: #fff;
+    margin-bottom: 20px;
 }
 
 input, button {
     display: block;
     width: 90%;
     margin: 10px auto;
-    padding: 10px;
+    padding: 12px;
     font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+input:focus {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.02);
 }
 
 button {
-    background-color: #007bff;
-    color: white;
-    border: none;
+    background: linear-gradient(135deg, #00f2fe, #4facfe);
+    color: #fff;
     cursor: pointer;
+    font-weight: bold;
+    letter-spacing: 1px;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    transform: scale(1.05);
 }
 
 ul {
     list-style: none;
     padding: 0;
+    margin: 20px 0;
 }
 
 ul li {
-    background: #f4f4f4;
-    padding: 10px;
-    margin: 5px;
-    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 10px;
     position: relative;
+    animation: slideIn 0.5s ease-in-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
 }
 
 ul li button {
     position: absolute;
     right: 10px;
-    top: 5px;
-    background: red;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #ff4d4d;
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 8px;
+}
+
+ul li button:hover {
+    background: #ff1a1a;
+    transform: translateY(-50%) scale(1.1);
+}
+
+#auth-section, #dashboard {
+    animation: fadeIn 1s ease-in-out;
+}
+
+#dashboard {
+    display: none;
 }
