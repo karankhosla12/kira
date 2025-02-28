@@ -1,136 +1,88 @@
+/* General Styles */
 body {
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, #1f1c2c, #928dab);
-    color: #fff;
-    text-align: center;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
+  font-family: 'Arial', sans-serif;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
 }
 
 .container {
-    max-width: 600px;
-    width: 100%;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    animation: fadeIn 1s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #2a2a2a;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 h1, h2 {
-    color: #fff;
-    margin-bottom: 20px;
+  color: #00ffcc;
 }
 
-input, button {
-    display: block;
-    width: 90%;
-    margin: 10px auto;
-    padding: 12px;
-    font-size: 16px;
-    border: none;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.2);
-    color: #fff;
-    outline: none;
-    transition: all 0.3s ease;
-}
-
-input::placeholder {
-    color: rgba(255, 255, 255, 0.7);
-}
-
-input:focus {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.02);
+input, textarea, button, select {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 5px;
 }
 
 button {
-    background: linear-gradient(135deg, #00f2fe, #4facfe);
-    color: #fff;
-    cursor: pointer;
-    font-weight: bold;
-    letter-spacing: 1px;
+  background-color: #00ffcc;
+  color: #1a1a1a;
+  cursor: pointer;
 }
 
 button:hover {
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
-    transform: scale(1.05);
-}
-
-ul {
-    list-style: none;
-    padding: 0;
-    margin: 20px 0;
-}
-
-ul li {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 10px;
-    position: relative;
-    animation: slideIn 0.5s ease-in-out;
-}
-
-@keyframes slideIn {
-    from { opacity: 0; transform: translateX(-20px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-ul li button {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #ff4d4d;
-    padding: 8px 12px;
-    font-size: 14px;
-    border-radius: 8px;
-}
-
-ul li button:hover {
-    background: #ff1a1a;
-    transform: translateY(-50%) scale(1.1);
-}
-
-#auth-section, #dashboard {
-    animation: fadeIn 1s ease-in-out;
+  background-color: #00ccaa;
 }
 
 #dashboard {
-    display: none;
+  display: none;
+  padding: 20px;
 }
 
-/* Modal Styling */
+#tasks-list {
+  margin-top: 20px;
+}
+
+.task {
+  background-color: #333333;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+}
+
+/* Modal Styles */
 .modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    width: 300px;
-    text-align: center;
+  background-color: #2a2a2a;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 500px;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: #fff;
 }
