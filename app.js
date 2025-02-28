@@ -7,6 +7,22 @@ const loginForm = document.getElementById("login-form");
 const signupForm = document.getElementById("signup-form");
 const logoutButton = document.getElementById("logout-button");
 const usernameSpan = document.getElementById("username");
+const updateUserButton = document.getElementById("update-user-button");
+const deleteUserButton = document.getElementById("delete-user-button");
+const projectNameInput = document.getElementById("project-name");
+const projectDescriptionInput = document.getElementById("project-description");
+const addProjectButton = document.getElementById("add-project-button");
+const projectList = document.getElementById("project-list");
+const taskNameInput = document.getElementById("task-name");
+const taskDescriptionInput = document.getElementById("task-description");
+const taskAssignedToInput = document.getElementById("task-assigned-to");
+const taskDeadlineInput = document.getElementById("task-deadline");
+const taskProjectSelect = document.getElementById("task-project");
+const taskStatusSelect = document.getElementById("task-status");
+const addTaskButton = document.getElementById("add-task-button");
+const viewAllTasksButton = document.getElementById("view-all-tasks-button");
+const filterByProjectSelect = document.getElementById("filter-by-project");
+const taskList = document.getElementById("task-list");
 
 let currentUser = null;
 
@@ -33,69 +49,85 @@ function showAuthSection() {
 function showDashboard(email) {
   authSection.classList.add("hidden");
   dashboardSection.classList.remove("hidden");
-  usernameSpan.textContent = email; // Display the user's email
+  usernameSpan.textContent = email;
 }
 
-// Handle Login
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = document.getElementById("login-username").value;
-  const password = document.getElementById("login-password").value;
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/login/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email_Id: email, password: password }),
+// Load Projects
+function loadProjects() {
+  fetch(`${API_BASE_URL}/projects`)
+    .then(response => response.json())
+    .then(projects => {
+      projectList.innerHTML = "";
+      projects.forEach(project => addProjectToDOM(project));
+      updateProjectDropdowns(projects);
     });
+}
 
-    if (response.ok) {
-      const user = await response.json();
-      if (user) {
-        // Set cookie with user's email
-        document.cookie = `user=${email}; path=/; max-age=3600`; // Expires in 1 hour
-        showDashboard(email);
-      } else {
-        alert("Invalid email or password");
-      }
-    } else {
-      alert("Login failed");
-    }
-  } catch (error) {
-    console.error("Login failed:", error);
-  }
+// Add Project to DOM
+function addProjectToDOM(project) {
+  const li = document.createElement("li");
+  li.textContent = `${project.project_name}: ${project.project_description}`;
+  projectList.appendChild(li);
+}
+
+// Update Project Dropdowns
+function updateProjectDropdowns(projects) {
+  taskProjectSelect.innerHTML = '<option value="">Select Project</option>';
+  filterByProjectSelect.innerHTML = '<option value="">Filter by Project</option>';
+  projects.forEach(project => {
+    const option = document.createElement("option");
+    option.value = project.projectid;
+    option.textContent = project.project_name;
+    taskProjectSelect.appendChild(option.cloneNode(true));
+    filterByProjectSelect.appendChild(option);
+  });
+}
+
+// Load All Tasks
+function loadTasks() {
+  fetch(`${API_BASE_URL}/tasks/assigned/${currentUser}`)
+    .then(response => response.json())
+    .then(tasks => {
+      taskList.innerHTML = "";
+      tasks.forEach(task => addTaskToDOM(task));
+    });
+}
+
+// Load Tasks by Project
+function loadTasksByProject(projectId) {
+  fetch(`${API_BASE_URL}/tasks?projectid=${projectId}`)
+    .then(response => response.json())
+    .then(tasks => {
+      taskList.innerHTML = "";
+      tasks.forEach(task => addTaskToDOM(task));
+    });
+}
+
+// Add Task to DOM
+function addTaskToDOM(task) {
+  const li = document.createElement("li");
+  li.textContent = `${task.taskname}: ${task.taskdescription} (Deadline: ${task.deadline}, Status: ${task.status})`;
+  taskList.appendChild(li);
+}
+
+// View All Tasks
+viewAllTasksButton.addEventListener("click", () => {
+  loadTasks();
 });
 
-// Handle Signup
-signupForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const username = document.getElementById("signup-username").value;
-  const password = document.getElementById("signup-password").value;
-  const email = document.getElementById("signup-email").value;
-  const phone = document.getElementById("signup-phone").value;
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/users/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, email_Id: email, phoneNumber: phone }),
-    });
-
-    if (response.ok) {
-      alert("Signup successful! Please log in.");
-      loginForm.reset();
-      signupForm.reset();
-    } else {
-      alert("Signup failed");
-    }
-  } catch (error) {
-    console.error("Signup failed:", error);
+// Filter Tasks by Project
+filterByProjectSelect.addEventListener("change", (e) => {
+  const projectId = e.target.value;
+  if (projectId) {
+    loadTasksByProject(projectId);
+  } else {
+    loadTasks();
   }
 });
 
 // Logout
 logoutButton.addEventListener("click", () => {
-  document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"; // Delete cookie
+  document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
   showAuthSection();
 });
 
