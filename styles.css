@@ -120,3 +120,62 @@ section button {
 section button:hover {
   background-color: #3700b3;
 }
+
+/* Task Filter */
+.task-filter {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.task-filter button, .task-filter select {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.task-filter button {
+  background-color: #6200ea;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.task-filter button:hover {
+  background-color: #3700b3;
+}
+
+/* Lists */
+.project-list, .task-list {
+  list-style: none;
+  padding: 0;
+}
+
+.project-list li, .task-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.task-list li.completed {
+  text-decoration: line-through;
+  color: #888;
+}
+
+.task-list button {
+  background: none;
+  border: none;
+  color: #ff1744;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.task-list button:hover {
+  color: #d50000;
+}
