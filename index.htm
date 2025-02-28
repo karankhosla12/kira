@@ -1,70 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Manager</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="app-container">
-        <h1 class="text-center">Task Manager</h1>
+  <!-- Login Form -->
+  <div id="login-form" class="container">
+    <h1>Task Manager</h1>
+    <h2>Login</h2>
+    <form id="login">
+      <input type="email" id="login-email" placeholder="Email" required>
+      <input type="password" id="login-password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+    <p>Don't have an account? <a href="#" id="show-signup">Sign Up</a></p>
+  </div>
 
-        <!-- Create Task Button -->
-        <button id="show-create-task-form">Create Task</button>
+  <!-- Signup Form -->
+  <div id="signup-form" class="container" style="display: none;">
+    <h1>Task Manager</h1>
+    <h2>Sign Up</h2>
+    <form id="signup">
+      <input type="text" id="signup-username" placeholder="Username" required>
+      <input type="email" id="signup-email" placeholder="Email" required>
+      <input type="password" id="signup-password" placeholder="Password" required>
+      <input type="text" id="signup-phone" placeholder="Phone Number" required>
+      <button type="submit">Sign Up</button>
+    </form>
+    <p>Already have an account? <a href="#" id="show-login">Login</a></p>
+  </div>
 
-        <!-- Create Task Form -->
-        <div id="create-task-form" class="hidden">
-            <h3 class="text-xl font-bold">Create New Task</h3>
-            <input type="text" id="task-name" placeholder="Task Name" class="p-2 mt-2 border rounded-md w-full">
-            <textarea id="task-description" placeholder="Task Description" class="p-2 mt-2 border rounded-md w-full"></textarea>
-            <input type="date" id="task-deadline" class="p-2 mt-2 border rounded-md w-full">
-            <input type="text" id="task-assigned-to" placeholder="Assigned To (User ID)" class="p-2 mt-2 border rounded-md w-full">
-            <input type="text" id="task-project-id" placeholder="Project ID" class="p-2 mt-2 border rounded-md w-full">
-            <input type="text" id="task-status" placeholder="Status" class="p-2 mt-2 border rounded-md w-full">
-            <button id="create-task-btn" class="mt-4 p-2 bg-green-500 text-white rounded-md">Create Task</button>
-        </div>
+  <!-- Dashboard -->
+  <div id="dashboard" style="display: none;">
+    <header>
+      <h1>Dashboard</h1>
+      <nav>
+        <button id="create-task-btn">Create Task</button>
+        <button id="create-project-btn">Create Project</button>
+        <button id="list-projects-btn">List All Projects</button>
+      </nav>
+    </header>
 
-        <!-- Create Project Button -->
-        <button id="show-create-project-form">Create Project</button>
-
-        <!-- Create Project Form -->
-        <div id="create-project-form" class="hidden">
-            <h3 class="text-xl font-bold">Create New Project</h3>
-            <input type="text" id="project-name" placeholder="Project Name" class="p-2 mt-2 border rounded-md w-full">
-            <textarea id="project-description" placeholder="Project Description" class="p-2 mt-2 border rounded-md w-full"></textarea>
-            <button id="create-project-btn" class="mt-4 p-2 bg-blue-500 text-white rounded-md">Create Project</button>
-        </div>
-
-        <!-- Filter Task Section -->
-        <div id="filter-tasks">
-            <h3>Filter Tasks</h3>
-            <select id="filter-project" class="p-2 mt-2 border rounded-md">
-                <option value="">Select Project</option>
-                <!-- Dynamic project options will go here -->
-            </select>
-            <select id="filter-status" class="p-2 mt-2 border rounded-md">
-                <option value="">Select Status</option>
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-            </select>
-            <input type="text" id="filter-assigned-to" placeholder="Assigned to (User ID)" class="p-2 mt-2 border rounded-md w-full">
-            <input type="text" id="filter-assigned-by" placeholder="Assigned by (User ID)" class="p-2 mt-2 border rounded-md w-full">
-            <button id="apply-filters-btn" class="p-2 mt-4 bg-blue-500 text-white rounded-md">Apply Filters</button>
-        </div>
-
-        <!-- Task List -->
-        <div id="tasks-list">
-            <h2>All Tasks</h2>
-        </div>
-
-        <!-- Project List -->
-        <div id="projects-list">
-            <h2>All Projects</h2>
-        </div>
+    <!-- Filter Form -->
+    <div id="filter-form">
+      <h2>Filter Tasks</h2>
+      <form id="filter-form">
+        <input type="text" id="filter-project-id" placeholder="Project ID">
+        <input type="email" id="filter-assigned-by" placeholder="Assigned By (Email)">
+        <input type="email" id="filter-assigned-to" placeholder="Assigned To (Email)">
+        <select id="filter-status">
+          <option value="">All Statuses</option>
+          <option value="0">Open</option>
+          <option value="1">In Progress</option>
+          <option value="2">Completed</option>
+        </select>
+        <button type="submit">Apply Filters</button>
+      </form>
     </div>
 
-    <script src="app.js"></script>
+    <!-- Tasks List -->
+    <div id="tasks-list"></div>
+
+    <!-- Projects List -->
+    <div id="projects-list" style="display: none;"></div>
+  </div>
+
+  <!-- Create Task Modal -->
+  <div id="create-task-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Create Task</h2>
+      <form id="create-task-form">
+        <input type="text" id="task-name" placeholder="Task Name" required>
+        <textarea id="task-description" placeholder="Task Description" required></textarea>
+        <input type="email" id="assigned-to" placeholder="Assigned To (Email)" required>
+        <input type="date" id="deadline" required>
+        <input type="text" id="project-id" placeholder="Project ID" required>
+        <button type="submit">Create</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Create Project Modal -->
+  <div id="create-project-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Create Project</h2>
+      <form id="create-project-form">
+        <input type="text" id="project-name" placeholder="Project Name" required>
+        <textarea id="project-description" placeholder="Project Description" required></textarea>
+        <button type="submit">Create</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Task Modal -->
+  <div id="edit-task-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Edit Task</h2>
+      <form id="edit-task-form">
+        <input type="hidden" id="edit-task-id">
+        <input type="text" id="edit-task-name" placeholder="Task Name" required>
+        <textarea id="edit-task-description" placeholder="Task Description" required></textarea>
+        <input type="email" id="edit-assigned-to" placeholder="Assigned To (Email)" required>
+        <input type="date" id="edit-deadline" required>
+        <select id="edit-status">
+          <option value="0">Open</option>
+          <option value="1">In Progress</option>
+          <option value="2">Completed</option>
+        </select>
+        <button type="submit">Update</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Project Modal -->
+  <div id="edit-project-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Edit Project</h2>
+      <form id="edit-project-form">
+        <input type="hidden" id="edit-project-id">
+        <input type="text" id="edit-project-name" placeholder="Project Name" required>
+        <textarea id="edit-project-description" placeholder="Project Description" required></textarea>
+        <button type="submit">Update</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
