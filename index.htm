@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Manager</title>
     <script>
+        const API_BASE_URL = "https://tarks.karankhosla99.workers.dev";
+
         document.addEventListener("DOMContentLoaded", function () {
             checkAuthStatus();
         });
@@ -18,7 +20,7 @@
                 return;
             }
 
-            const endpoint = isSignup ? "/users" : `/users/${username}`;
+            const endpoint = isSignup ? `${API_BASE_URL}/users` : `${API_BASE_URL}/users/${username}`;
             const method = isSignup ? "POST" : "GET";
 
             const response = await fetch(endpoint, {
@@ -52,40 +54,66 @@
         async function performAction(action) {
             let endpoint = "";
             let method = "";
+            let body = null;
 
             switch (action) {
                 case "createUser":
-                    endpoint = "/users";
+                    const newUsername = prompt("Enter new username:");
+                    const newPassword = prompt("Enter password:");
+                    if (!newUsername || !newPassword) return;
+                    endpoint = `${API_BASE_URL}/users`;
                     method = "POST";
+                    body = JSON.stringify({ username: newUsername, password: newPassword });
                     break;
                 case "deleteUser":
                     const username = prompt("Enter username to delete:");
                     if (!username) return;
-                    endpoint = `/users/${username}`;
+                    endpoint = `${API_BASE_URL}/users/${username}`;
                     method = "DELETE";
                     break;
                 case "createProject":
-                    endpoint = "/projects";
+                    const projectName = prompt("Enter project name:");
+                    const projectDescription = prompt("Enter project description:");
+                    if (!projectName) return;
+                    endpoint = `${API_BASE_URL}/projects`;
                     method = "POST";
+                    body = JSON.stringify({ project_name: projectName, project_description: projectDescription });
                     break;
                 case "deleteProject":
                     const projectId = prompt("Enter project ID to delete:");
                     if (!projectId) return;
-                    endpoint = `/projects/${projectId}`;
+                    endpoint = `${API_BASE_URL}/projects/${projectId}`;
                     method = "DELETE";
                     break;
                 case "createTask":
-                    endpoint = "/tasks";
+                    const taskName = prompt("Enter task name:");
+                    const taskDescription = prompt("Enter task description:");
+                    const assignedTo = prompt("Assign task to (username):");
+                    const assignedBy = prompt("Assigned by (your username):");
+                    const deadline = prompt("Enter deadline (YYYY-MM-DD):");
+                    const projectID = prompt("Enter project ID:");
+                    const status = prompt("Enter task status (0=Pending, 1=In Progress, 2=Completed):");
+                    if (!taskName || !assignedTo || !projectID) return;
+                    endpoint = `${API_BASE_URL}/tasks`;
                     method = "POST";
+                    body = JSON.stringify({
+                        taskname: taskName,
+                        taskdescription: taskDescription,
+                        assigned_to: assignedTo,
+                        assigned_by: assignedBy,
+                        deadline: deadline,
+                        projectid: projectID,
+                        status: status
+                    });
                     break;
                 case "deleteTask":
                     const taskId = prompt("Enter task ID to delete:");
                     if (!taskId) return;
-                    endpoint = `/tasks/${taskId}`;
+                    endpoint = `${API_BASE_URL}/tasks/${taskId}`;
                     method = "DELETE";
                     break;
                 case "viewTasks":
-                    endpoint = "/tasks";
+                    endpoint = `${API_BASE_URL}/tasks`;
                     method = "GET";
                     break;
                 default:
@@ -93,7 +121,12 @@
                     return;
             }
 
-            const response = await fetch(endpoint, { method });
+            const response = await fetch(endpoint, {
+                method,
+                headers: { "Content-Type": "application/json" },
+                body: body ? body : null
+            });
+
             const data = await response.json();
             alert(JSON.stringify(data, null, 2));
         }
