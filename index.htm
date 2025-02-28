@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Manager</title>
+    <title>Futuristic Task Manager</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <!-- Authentication Section -->
         <div id="auth-section">
-            <h2>Login or Sign Up</h2>
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="password" placeholder="Password">
+            <h2>Welcome to Task Manager</h2>
+            <input type="email" id="email" placeholder="Enter your email">
+            <input type="password" id="password" placeholder="Enter your password">
             <button onclick="loginOrSignup(false)">Login</button>
             <button onclick="loginOrSignup(true)">Sign Up</button>
         </div>
@@ -23,7 +23,7 @@
             <button onclick="logout()">Logout</button>
             
             <h2>Projects</h2>
-            <input type="text" id="projectName" placeholder="Project Name">
+            <input type="text" id="projectName" placeholder="New Project Name">
             <button onclick="createProject()">Create Project</button>
             <ul id="projectList"></ul>
 
