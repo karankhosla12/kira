@@ -125,6 +125,31 @@ header h1 {
   background-color: #3700b3;
 }
 
+/* Task Filter */
+.task-filter {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.task-filter button, .task-filter select {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.task-filter button {
+  background-color: #6200ea;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.task-filter button:hover {
+  background-color: #3700b3;
+}
+
 /* Lists */
 .project-list, .task-list {
   list-style: none;
