@@ -14,7 +14,7 @@ async function loginOrSignup(isSignup) {
         return;
     }
 
-    const endpoint = isSignup ? "/users" : `/users`;
+    const endpoint = isSignup ? "/users" : `/login`;
     const method = isSignup ? "POST" : "POST"; 
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
