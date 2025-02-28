@@ -56,6 +56,67 @@ function showDashboard(email) {
   usernameSpan.textContent = email;
 }
 
+// Login Functionality
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("login-email").value;
+  const password = document.getElementById("login-password").value;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email_Id: email, password }),
+    });
+
+    if (response.ok) {
+      const user = await response.json();
+      // Set a cookie with the user's email
+      document.cookie = `user=${email}; path=/; max-age=3600`; // Expires in 1 hour
+      showDashboard(email);
+    } else {
+      alert("Invalid email or password.");
+    }
+  } catch (error) {
+    console.error("Login failed:", error);
+    alert("An error occurred. Please try again.");
+  }
+});
+
+// Signup Functionality
+signupForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const username = document.getElementById("signup-username").value;
+  const password = document.getElementById("signup-password").value;
+  const email = document.getElementById("signup-email").value;
+  const phone = document.getElementById("signup-phone").value;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/users`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password, email_Id: email, phoneNumber: phone }),
+    });
+
+    if (response.ok) {
+      alert("Signup successful! Please log in.");
+      loginForm.reset();
+      signupForm.reset();
+    } else {
+      alert("Signup failed.");
+    }
+  } catch (error) {
+    console.error("Signup failed:", error);
+    alert("An error occurred. Please try again.");
+  }
+});
+
+// Logout Functionality
+logoutButton.addEventListener("click", () => {
+  document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+  showAuthSection();
+});
+
 // Load Projects
 function loadProjects() {
   fetch(`${API_BASE_URL}/projects`)
@@ -127,12 +188,6 @@ filterByProjectSelect.addEventListener("change", (e) => {
   } else {
     loadTasks();
   }
-});
-
-// Logout
-logoutButton.addEventListener("click", () => {
-  document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-  showAuthSection();
 });
 
 // Additional Task Management Functions
