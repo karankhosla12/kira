@@ -27,7 +27,7 @@ async function loginOrSignup(isSignup) {
         return;
     }
 
-    const endpoint = isSignup ? "/users" : `/login`;
+    const endpoint = isSignup ? "/users" : "/login";
     const method = isSignup ? "POST" : "POST";
 
     try {
@@ -45,6 +45,7 @@ async function loginOrSignup(isSignup) {
             document.getElementById("dashboard").style.display = "block";
             loadTasks();
             loadProjects();
+            loadAllUsers(); // Load all users for task assignment
             showToast(isSignup ? "Signup successful!" : "Login successful!", "success");
         } else {
             showToast(data.error || "Login failed. Please try again.", "error");
@@ -72,6 +73,25 @@ function checkAuthStatus() {
         document.getElementById("dashboard").style.display = "block";
         loadTasks();
         loadProjects();
+        loadAllUsers(); // Load all users for task assignment
+    }
+}
+
+// Load All Users for Task Assignment
+async function loadAllUsers() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/users`);
+        const users = await response.json();
+        const userSelect = document.getElementById("assignTo");
+        userSelect.innerHTML = "<option value=''>Select User</option>";
+        users.forEach(user => {
+            const option = document.createElement("option");
+            option.value = user.email_Id;
+            option.text = user.email_Id;
+            userSelect.appendChild(option);
+        });
+    } catch (error) {
+        showToast("Failed to load users.", "error");
     }
 }
 
@@ -84,72 +104,82 @@ async function loadTasks() {
         const taskList = document.getElementById("taskList");
         taskList.innerHTML = "";
 
-        tasks.forEach((task) => {
+        tasks.forEach(task => {
             const li = document.createElement("li");
-            li.innerText = `${task.taskname} - ${task.taskdescription} (Due: ${task.deadline})`;
-            const btn = document.createElement("button");
-            btn.innerText = "Delete";
-            btn.onclick = () => deleteTask(task.taskid);
-            li.appendChild(btn);
+            li.innerText = `${task.taskname} - ${task.taskdescription} (Due: ${task.deadline}) - Status: ${task.status}`;
+            const editBtn = document.createElement("button");
+            editBtn.innerText = "Edit";
+            editBtn.onclick = () => openEditTaskModal(task);
+            li.appendChild(editBtn);
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.innerText = "Delete";
+            deleteBtn.onclick = () => deleteTask(task.taskid);
+            li.appendChild(deleteBtn);
+
             taskList.appendChild(li);
         });
     } catch (error) {
-        showToast("Failed to load tasks. Please try again.", "error");
+        showToast("Failed to load tasks.", "error");
     }
 }
 
-// Create Task
-async function createTask() {
-    const taskname = document.getElementById("taskName").value;
-    const taskdescription = document.getElementById("taskDesc").value;
-    const deadline = document.getElementById("taskDeadline").value;
+// Open Edit Task Modal
+function openEditTaskModal(task) {
+    document.getElementById("editTaskId").value = task.taskid;
+    document.getElementById("editTaskName").value = task.taskname;
+    document.getElementById("editTaskDesc").value = task.taskdescription;
+    document.getElementById("editTaskDeadline").value = task.deadline;
+    document.getElementById("editTaskStatus").value = task.status;
+    document.getElementById("assignTo").value = task.assigned_to;
+    document.getElementById("editTaskModal").style.display = "block";
+}
 
-    if (!taskname || !taskdescription || !deadline) {
-        showToast("Please fill in all task details.", "error");
-        return;
-    }
+// Close Edit Task Modal
+function closeEditTaskModal() {
+    document.getElementById("editTaskModal").style.display = "none";
+}
+
+// Update Task
+async function updateTask() {
+    const taskId = document.getElementById("editTaskId").value;
+    const taskname = document.getElementById("editTaskName").value;
+    const taskdescription = document.getElementById("editTaskDesc").value;
+    const deadline = document.getElementById("editTaskDeadline").value;
+    const status = document.getElementById("editTaskStatus").value;
+    const assigned_to = document.getElementById("assignTo").value;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/tasks`, {
-            method: "POST",
+        const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+            method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                taskname,
-                taskdescription,
-                assigned_to: currentUser,
-                assigned_by: currentUser,
-                deadline,
-                projectid: 1,
-                status: 0,
-            }),
+            body: JSON.stringify({ taskname, taskdescription, deadline, status, assigned_to }),
         });
 
         if (response.ok) {
             loadTasks();
-            showToast("Task created successfully!", "success");
+            closeEditTaskModal();
+            showToast("Task updated successfully!", "success");
         } else {
-            showToast("Failed to create task. Please try again.", "error");
+            showToast("Failed to update task.", "error");
         }
     } catch (error) {
-        showToast("An error occurred. Please try again.", "error");
+        showToast("An error occurred.", "error");
     }
 }
 
 // Delete Task
 async function deleteTask(taskId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
-            method: "DELETE",
-        });
-
+        const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, { method: "DELETE" });
         if (response.ok) {
             loadTasks();
             showToast("Task deleted successfully!", "success");
         } else {
-            showToast("Failed to delete task. Please try again.", "error");
+            showToast("Failed to delete task.", "error");
         }
     } catch (error) {
-        showToast("An error occurred. Please try again.", "error");
+        showToast("An error occurred.", "error");
     }
 }
 
@@ -162,17 +192,42 @@ async function loadProjects() {
         const projectList = document.getElementById("projectList");
         projectList.innerHTML = "";
 
-        projects.forEach((project) => {
+        projects.forEach(project => {
             const li = document.createElement("li");
             li.innerText = `${project.project_name}`;
-            const btn = document.createElement("button");
-            btn.innerText = "Delete";
-            btn.onclick = () => deleteProject(project.projectid);
-            li.appendChild(btn);
+            const viewTasksBtn = document.createElement("button");
+            viewTasksBtn.innerText = "View Tasks";
+            viewTasksBtn.onclick = () => viewTasksByProject(project.projectid);
+            li.appendChild(viewTasksBtn);
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.innerText = "Delete";
+            deleteBtn.onclick = () => deleteProject(project.projectid);
+            li.appendChild(deleteBtn);
+
             projectList.appendChild(li);
         });
     } catch (error) {
-        showToast("Failed to load projects. Please try again.", "error");
+        showToast("Failed to load projects.", "error");
+    }
+}
+
+// View Tasks by Project
+async function viewTasksByProject(projectId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/tasks?projectid=${projectId}`);
+        const tasks = await response.json();
+
+        const taskList = document.getElementById("taskList");
+        taskList.innerHTML = "";
+
+        tasks.forEach(task => {
+            const li = document.createElement("li");
+            li.innerText = `${task.taskname} - ${task.taskdescription} (Due: ${task.deadline}) - Status: ${task.status}`;
+            taskList.appendChild(li);
+        });
+    } catch (error) {
+        showToast("Failed to load tasks for this project.", "error");
     }
 }
 
@@ -189,37 +244,31 @@ async function createProject() {
         const response = await fetch(`${API_BASE_URL}/projects`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                project_name: projectName,
-                project_description: "A new project",
-            }),
+            body: JSON.stringify({ project_name: projectName, project_description: "A new project" }),
         });
 
         if (response.ok) {
             loadProjects();
             showToast("Project created successfully!", "success");
         } else {
-            showToast("Failed to create project. Please try again.", "error");
+            showToast("Failed to create project.", "error");
         }
     } catch (error) {
-        showToast("An error occurred. Please try again.", "error");
+        showToast("An error occurred.", "error");
     }
 }
 
 // Delete Project
 async function deleteProject(projectId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
-            method: "DELETE",
-        });
-
+        const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, { method: "DELETE" });
         if (response.ok) {
             loadProjects();
             showToast("Project deleted successfully!", "success");
         } else {
-            showToast("Failed to delete project. Please try again.", "error");
+            showToast("Failed to delete project.", "error");
         }
     } catch (error) {
-        showToast("An error occurred. Please try again.", "error");
+        showToast("An error occurred.", "error");
     }
 }
