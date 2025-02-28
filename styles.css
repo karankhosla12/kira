@@ -96,12 +96,15 @@ header h1 {
   background-color: #d50000;
 }
 
-.task-form {
+/* Forms */
+.project-form, .task-form {
   display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
   margin-bottom: 2rem;
 }
 
-#task-input {
+.project-form input, .task-form input, .task-form select {
   flex: 1;
   padding: 0.75rem;
   border: 1px solid #ddd;
@@ -109,26 +112,26 @@ header h1 {
   font-size: 1rem;
 }
 
-#add-task-button {
+.project-form button, .task-form button {
   padding: 0.75rem 1.5rem;
   background-color: #6200ea;
   color: #fff;
   border: none;
   border-radius: 4px;
-  margin-left: 1rem;
   cursor: pointer;
 }
 
-#add-task-button:hover {
+.project-form button:hover, .task-form button:hover {
   background-color: #3700b3;
 }
 
-.task-list {
+/* Lists */
+.project-list, .task-list {
   list-style: none;
   padding: 0;
 }
 
-.task-list li {
+.project-list li, .task-list li {
   display: flex;
   justify-content: space-between;
   align-items: center;
