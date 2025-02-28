@@ -35,11 +35,39 @@
       <button id="logout-button">Log Out</button>
     </header>
     <main>
-      <div class="task-form">
-        <input type="text" id="task-input" placeholder="Add a new task">
-        <button id="add-task-button">Add Task</button>
-      </div>
-      <ul id="task-list" class="task-list"></ul>
+      <!-- User Management -->
+      <section>
+        <h2>User Management</h2>
+        <button id="update-user-button">Update Profile</button>
+        <button id="delete-user-button">Delete Account</button>
+      </section>
+
+      <!-- Project Management -->
+      <section>
+        <h2>Projects</h2>
+        <div class="project-form">
+          <input type="text" id="project-name" placeholder="Project Name">
+          <input type="text" id="project-description" placeholder="Project Description">
+          <button id="add-project-button">Add Project</button>
+        </div>
+        <ul id="project-list" class="project-list"></ul>
+      </section>
+
+      <!-- Task Management -->
+      <section>
+        <h2>Tasks</h2>
+        <div class="task-form">
+          <input type="text" id="task-name" placeholder="Task Name">
+          <input type="text" id="task-description" placeholder="Task Description">
+          <input type="text" id="task-assigned-to" placeholder="Assigned To">
+          <input type="date" id="task-deadline">
+          <select id="task-project">
+            <option value="">Select Project</option>
+          </select>
+          <button id="add-task-button">Add Task</button>
+        </div>
+        <ul id="task-list" class="task-list"></ul>
+      </section>
     </main>
   </div>
 
