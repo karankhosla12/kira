@@ -39,7 +39,7 @@ function showDashboard(email) {
 // Handle Login
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const email = document.getElementById("login-email").value;
+  const email = document.getElementById("login-username").value;
   const password = document.getElementById("login-password").value;
 
   try {
