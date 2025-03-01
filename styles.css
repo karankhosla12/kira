@@ -10,6 +10,10 @@
     --text-light: #6b778c;
     --border-color: #dfe1e6;
     --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    --sidebar-width-desktop: 250px;
+    --sidebar-width-tablet: 70px;
+    --sidebar-width-mobile: 0px;
+    --header-height-mobile: 60px;
 }
 
 * {
@@ -23,6 +27,7 @@ body {
     background-color: var(--background-color);
     color: var(--text-color);
     min-height: 100vh;
+    font-size: 16px;
 }
 
 .hidden {
@@ -36,7 +41,7 @@ body {
 
 /* Sidebar Styles */
 .sidebar {
-    width: 250px;
+    width: var(--sidebar-width-desktop);
     background-color: var(--sidebar-color);
     color: white;
     display: flex;
@@ -44,11 +49,15 @@ body {
     padding: 20px 0;
     position: fixed;
     height: 100vh;
+    z-index: 100;
+    transition: transform 0.3s ease, width 0.3s ease;
 }
 
 .logo {
     padding: 0 20px 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
 }
 
 .logo h1 {
@@ -56,10 +65,45 @@ body {
     font-weight: 600;
 }
 
+.mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 101;
+    padding: 5px;
+}
+
+.mobile-header {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--header-height-mobile);
+    background-color: var(--sidebar-color);
+    color: white;
+    z-index: 99;
+    padding: 0 15px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mobile-header h1 {
+    font-size: 20px;
+    margin-left: 40px;
+}
+
 .nav-links {
     list-style: none;
     margin-top: 20px;
     flex: 1;
+    overflow-y: auto;
 }
 
 .nav-links li {
@@ -78,6 +122,8 @@ body {
 .nav-links a i {
     margin-right: 10px;
     font-size: 18px;
+    min-width: 20px;
+    text-align: center;
 }
 
 .nav-links a:hover, .nav-links a.active {
@@ -88,8 +134,9 @@ body {
 /* Main Content */
 .main-content {
     flex: 1;
-    margin-left: 250px;
+    margin-left: var(--sidebar-width-desktop);
     padding: 20px;
+    transition: margin-left 0.3s ease;
 }
 
 /* Dashboard Styles */
@@ -100,11 +147,34 @@ body {
     margin-bottom: 30px;
 }
 
+.stat-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: var(--card-shadow);
+}
+
 /* Projects Section */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
 .projects-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
+}
+
+.project-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: var(--card-shadow);
 }
 
 /* Tasks Section */
@@ -150,6 +220,30 @@ body {
     border-radius: 8px;
     padding: 20px;
     box-shadow: var(--card-shadow);
+}
+
+/* Form Elements */
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+button {
+    padding: 10px 15px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: var(--secondary-color);
 }
 
 /* Modal Overlay */
@@ -228,17 +322,35 @@ body {
     padding: 0 20px 20px;
 }
 
+/* Touch Friendly Buttons */
+.action-button {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 992px) {
     .tasks-board {
-        grid-template-columns: 1fr;
-        gap: 30px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .projects-container,
+    .users-container {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     }
 }
 
 @media (max-width: 768px) {
+    :root {
+        --sidebar-width: var(--sidebar-width-tablet);
+    }
+    
     .sidebar {
-        width: 70px;
+        width: var(--sidebar-width-tablet);
         overflow: hidden;
     }
     
@@ -261,22 +373,59 @@ body {
     }
     
     .main-content {
-        margin-left: 70px;
+        margin-left: var(--sidebar-width-tablet);
     }
     
-    .profile-section {
-        align-items: center;
+    .projects-container,
+    .users-container {
+        grid-template-columns: 1fr 1fr;
     }
     
-    #logout-btn {
-        padding: 5px;
-        font-size: 12px;
+    .tasks-board {
+        grid-template-columns: 1fr;
+        gap: 30px;
     }
 }
 
 @media (max-width: 576px) {
+    .mobile-menu-toggle,
+    .mobile-header {
+        display: flex;
+    }
+    
+    .sidebar {
+        transform: translateX(-100%);
+        width: 250px;
+        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .logo h1, 
+    .nav-links a span {
+        display: block;
+    }
+    
+    .nav-links a {
+        justify-content: flex-start;
+        padding: 10px 20px;
+    }
+    
+    .nav-links a i {
+        margin-right: 10px;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        padding: 15px;
+        padding-top: calc(var(--header-height-mobile) + 15px);
+    }
+    
     .dashboard-stats {
         grid-template-columns: 1fr;
+        gap: 15px;
     }
     
     .section-header {
@@ -287,9 +436,35 @@ body {
     
     .action-buttons {
         width: 100%;
+        display: flex;
+        justify-content: space-between;
     }
     
-    #add-project-btn, #add-task-btn, #add-user-btn {
+    .projects-container,
+    .users-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-buttons {
+        flex-direction: column;
+    }
+    
+    .modal-buttons button {
         width: 100%;
+    }
+}
+
+/* Improved touch targets for mobile */
+@media (max-width: 992px) {
+    button, 
+    .nav-links a,
+    .task-card,
+    .close-modal {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .task-card {
+        padding: 15px;
     }
 }
