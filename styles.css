@@ -236,185 +236,44 @@ body {
     }
 }
 
-/* Mobile-First Adjustments */
 @media (max-width: 768px) {
-    /* Sidebar */
     .sidebar {
         width: 70px;
         overflow: hidden;
-        transition: width 0.3s ease;
     }
-
-    .sidebar:hover {
-        width: 250px;
-    }
-
+    
     .logo h1, .profile-section #username {
         display: none;
     }
-
+    
     .nav-links a span {
         display: none;
     }
-
+    
     .nav-links a {
         justify-content: center;
         padding: 15px;
     }
-
+    
     .nav-links a i {
         margin-right: 0;
         font-size: 20px;
     }
-
+    
     .main-content {
         margin-left: 70px;
     }
-
-    /* Dashboard Stats */
-    .dashboard-stats {
-        grid-template-columns: 1fr;
-    }
-
-    /* Projects and Users Grid */
-    .projects-container, .users-container {
-        grid-template-columns: 1fr;
-    }
-
-    /* Tasks Board */
-    .tasks-board {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-
-    /* Modal */
-    .modal {
-        width: 90%;
-        max-width: 100%;
-        border-radius: 0;
-        height: 100vh;
-        max-height: 100vh;
-    }
-
-    .modal-overlay {
-        align-items: flex-end;
-    }
-
-    /* Buttons */
-    .action-buttons {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    #add-project-btn, #add-task-btn, #add-user-btn {
-        width: 100%;
-    }
-
-    /* Typography */
-    h1 {
-        font-size: 24px;
-    }
-
-    h2 {
-        font-size: 20px;
-    }
-
-    p {
-        font-size: 14px;
-    }
-
-    /* Cards */
-    .task-card, .user-card, .project-card {
-        padding: 10px;
-    }
-
-    .task-card h4, .user-card .user-name, .project-card h3 {
-        font-size: 16px;
-    }
-
-    /* Forms */
-    .auth-form {
-        padding: 15px;
-    }
-
-    .form-group {
-        margin-bottom: 15px;
-    }
-
-    .form-control {
-        font-size: 14px;
-    }
-
-    .btn {
-        padding: 10px 15px;
-        font-size: 14px;
-    }
-
-    /* Section Headers */
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    /* Profile Section */
+    
     .profile-section {
         align-items: center;
     }
-
+    
     #logout-btn {
         padding: 5px;
         font-size: 12px;
     }
 }
 
-@media (max-width: 576px) {
-    /* Further Adjustments for Small Screens */
-    .sidebar {
-        width: 0;
-    }
-
-    .sidebar:hover {
-        width: 250px;
-    }
-
-    .main-content {
-        margin-left: 0;
-    }
-
-    /* Hide Sidebar on Small Screens */
-    .sidebar.hidden-mobile {
-        display: none;
-    }
-
-    /* Show Hamburger Menu */
-    .hamburger-menu {
-        display: block;
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        z-index: 1000;
-        background-color: var(--sidebar-color);
-        color: white;
-        padding: 10px;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-
-    .hamburger-menu i {
-        font-size: 24px;
-    }
-
-    /* Adjust Modal Position */
-    .modal-overlay {
-        align-items: flex-start;
-        padding-top: 20px;
-    }
-
-    .modal {
-        border-radius: 8px 8px 0 0;
-    }
-}
 @media (max-width: 576px) {
     .dashboard-stats {
         grid-template-columns: 1fr;
