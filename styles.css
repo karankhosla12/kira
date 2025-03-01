@@ -502,6 +502,7 @@ body {
     overflow-y: auto;
     z-index: 1001;
     display: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .modal-header {
