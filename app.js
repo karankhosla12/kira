@@ -391,7 +391,8 @@ async function handleProjectSubmit(e) {
     
     const projectData = {
         project_name: projectName,
-        project_description: projectDescription
+        project_description: projectDescription,
+        projectid : projectId
     };
     
     try {
