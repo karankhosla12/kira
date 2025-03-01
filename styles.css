@@ -476,6 +476,7 @@ body {
     width: 20px;
     margin-right: 8px;
 }
+
 /* Modal Overlay */
 .modal-overlay {
     position: fixed;
@@ -550,27 +551,6 @@ body {
     margin-top: 20px;
     padding: 0 20px 20px;
 }
-
-
-
-.modal-header h2 {
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.close-modal {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: var(--text-light);
-}
-
-.modal-body {
-    padding: 20px;
-}
-
-
 
 /* Loading Indicator */
 .loading-indicator {
