@@ -31,51 +31,28 @@ const userModal = document.getElementById('user-modal');
 const projectForm = document.getElementById('project-form');
 const taskForm = document.getElementById('task-form');
 const userForm = document.getElementById('user-form');
-const closeModalButtons = document.querySelectorAll('.close-modal');
-const cancelButtons = document.querySelectorAll('.cancel-btn');
 
-// Action Buttons
-const addProjectBtn = document.getElementById('add-project-btn');
-const addTaskBtn = document.getElementById('add-task-btn');
-const addUserBtn = document.getElementById('add-user-btn');
-const projectFilter = document.getElementById('project-filter');
-
-// Current User State
+// Current User
 let currentUser = null;
 
 // Initialize the application
-document.addEventListener('DOMContentLoaded', () => {
+function initApp() {
     // Check if user is logged in
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-        currentUser = JSON.parse(storedUser);
-        updateUIForLoggedInUser();
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        showLoggedInUI();
         loadDashboard();
+    } else {
+        showLoginUI();
     }
 
     // Set up event listeners
     setupEventListeners();
-});
+}
 
-// Set up all event listeners
+// Event Listeners
 function setupEventListeners() {
-    // Navigation
-    dashboardLink.addEventListener('click', () => showSection(dashboardSection));
-    projectsLink.addEventListener('click', () => {
-        showSection(projectsSection);
-        loadProjects();
-    });
-    tasksLink.addEventListener('click', () => {
-        showSection(tasksSection);
-        loadTasks();
-        loadProjectsDropdown();
-    });
-    usersLink.addEventListener('click', () => {
-        showSection(usersSection);
-        loadUsers();
-    });
-    logoutBtn.addEventListener('click', logout);
-
     // Auth tabs
     loginTab.addEventListener('click', () => {
         loginTab.classList.add('active');
@@ -83,6 +60,7 @@ function setupEventListeners() {
         loginForm.classList.add('active');
         registerForm.classList.remove('active');
     });
+
     registerTab.addEventListener('click', () => {
         registerTab.classList.add('active');
         loginTab.classList.remove('active');
@@ -97,264 +75,303 @@ function setupEventListeners() {
     taskForm.addEventListener('submit', handleTaskSubmit);
     userForm.addEventListener('submit', handleUserSubmit);
 
-    // Action buttons
-    addProjectBtn.addEventListener('click', () => openProjectModal());
-    addTaskBtn.addEventListener('click', () => openTaskModal());
-    addUserBtn.addEventListener('click', () => openUserModal());
-    projectFilter.addEventListener('change', filterTasks);
+    // Navigation
+    dashboardLink.addEventListener('click', () => navigateTo('dashboard'));
+    projectsLink.addEventListener('click', () => navigateTo('projects'));
+    tasksLink.addEventListener('click', () => navigateTo('tasks'));
+    usersLink.addEventListener('click', () => navigateTo('users'));
+    logoutBtn.addEventListener('click', handleLogout);
 
-    // Close modals
-    closeModalButtons.forEach(button => {
-        button.addEventListener('click', closeAllModals);
+    // Add new buttons
+    document.getElementById('add-project-btn').addEventListener('click', () => openProjectModal());
+    document.getElementById('add-task-btn').addEventListener('click', () => openTaskModal());
+    document.getElementById('add-user-btn').addEventListener('click', () => openUserModal());
+
+    // Project filter for tasks
+    document.getElementById('project-filter').addEventListener('change', filterTasks);
+
+    // Modal close buttons
+    document.querySelectorAll('.close-modal, .cancel-btn').forEach(btn => {
+        btn.addEventListener('click', closeAllModals);
     });
-    cancelButtons.forEach(button => {
-        button.addEventListener('click', closeAllModals);
-    });
-    modalOverlay.addEventListener('click', closeAllModals);
 }
 
-// Auth Functions
-async function handleLogin(e) {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
+// API Calls
+async function apiRequest(endpoint, method = 'GET', data = null) {
+    const options = {
+        method,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    if (data) {
+        options.body = JSON.stringify(data);
+    }
 
     try {
-        const response = await fetch(`${API_URL}/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email_Id: email, password: password })
-        });
+        const response = await fetch(`${API_URL}${endpoint}`, options);
+        
+        // For successful DELETE operations that return empty response
+        if (response.status === 200 && method === 'DELETE') {
+            return { success: true };
+        }
+        
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('API Error:', error);
+        showNotification('Error connecting to the server', 'error');
+        return null;
+    }
+}
 
-        if (response.ok) {
-            const userData = await response.json();
-            currentUser = userData;
-            localStorage.setItem('currentUser', JSON.stringify(userData));
-            updateUIForLoggedInUser();
+// Authentication Handlers
+async function handleLogin(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
+    try {
+        const user = await apiRequest('/login', 'POST', { email_Id: email, password });
+        
+        if (user && !user.error) {
+            currentUser = user;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            showLoggedInUI();
             loadDashboard();
-            showToast('Login successful!', 'success');
+            showNotification('Login successful', 'success');
         } else {
-            const error = await response.json();
-            showToast(error.error || 'Invalid credentials', 'error');
+            showNotification('Invalid email or password', 'error');
         }
     } catch (error) {
-        showToast('Error connecting to server', 'error');
-        console.error('Login error:', error);
+        showNotification('Login failed', 'error');
     }
 }
 
 async function handleRegister(e) {
     e.preventDefault();
+    
     const username = document.getElementById('register-username').value;
     const email = document.getElementById('register-email').value;
     const phone = document.getElementById('register-phone').value;
     const password = document.getElementById('register-password').value;
-
+    
     try {
-        const response = await fetch(`${API_URL}/users`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                username: username,
-                email_Id: email,
-                phoneNumber: phone,
-                password: password
-            })
+        await apiRequest('/users', 'POST', {
+            username,
+            password,
+            email_Id: email,
+            phoneNumber: phone
         });
-
-        if (response.ok) {
-            showToast('Registration successful! Please login.', 'success');
-            // Switch to login tab
-            loginTab.click();
-            // Fill in login form with registered email
-            document.getElementById('login-email').value = email;
-        } else {
-            const error = await response.json();
-            showToast(error.error || 'Registration failed', 'error');
-        }
+        
+        showNotification('Registration successful. Please login.', 'success');
+        loginTab.click();
+        document.getElementById('login-email').value = email;
     } catch (error) {
-        showToast('Error connecting to server', 'error');
-        console.error('Registration error:', error);
+        showNotification('Registration failed', 'error');
     }
 }
 
-function logout() {
+function handleLogout() {
     currentUser = null;
     localStorage.removeItem('currentUser');
-    // Reset and show auth section
-    document.getElementById('login-email').value = '';
-    document.getElementById('login-password').value = '';
-    showSection(authSection);
-    showToast('Logged out successfully', 'info');
+    showLoginUI();
+    showNotification('Logged out successfully', 'success');
 }
 
-function updateUIForLoggedInUser() {
-    // Update username display
-    document.getElementById('username').textContent = currentUser.username;
+// UI State Management
+function showLoginUI() {
+    authSection.classList.remove('hidden');
+    dashboardSection.classList.add('hidden');
+    projectsSection.classList.add('hidden');
+    tasksSection.classList.add('hidden');
+    usersSection.classList.add('hidden');
+    
+    document.getElementById('username').textContent = 'Guest';
+}
 
-    // Hide auth section, show dashboard
+function showLoggedInUI() {
     authSection.classList.add('hidden');
-    // Reset active class on nav links
-    document.querySelectorAll('.nav-links a').forEach(link => {
-        link.classList.remove('active');
-    });
-    dashboardLink.classList.add('active');
+    document.getElementById('username').textContent = currentUser.username;
 }
 
-// Project Functions
+function navigateTo(section) {
+    // Hide all sections
+    dashboardSection.classList.add('hidden');
+    projectsSection.classList.add('hidden');
+    tasksSection.classList.add('hidden');
+    usersSection.classList.add('hidden');
+    
+    // Remove active class from all links
+    dashboardLink.classList.remove('active');
+    projectsLink.classList.remove('active');
+    tasksLink.classList.remove('active');
+    usersLink.classList.remove('active');
+    
+    // Show selected section and highlight nav link
+    switch (section) {
+        case 'dashboard':
+            dashboardSection.classList.remove('hidden');
+            dashboardLink.classList.add('active');
+            loadDashboard();
+            break;
+        case 'projects':
+            projectsSection.classList.remove('hidden');
+            projectsLink.classList.add('active');
+            loadProjects();
+            break;
+        case 'tasks':
+            tasksSection.classList.remove('hidden');
+            tasksLink.classList.add('active');
+            loadTasks();
+            loadProjectsForFilter();
+            break;
+        case 'users':
+            usersSection.classList.remove('hidden');
+            usersLink.classList.add('active');
+            loadUsers();
+            break;
+    }
+}
+
+// Dashboard
+async function loadDashboard() {
+    try {
+        // Load counts
+        const projectsData = await apiRequest('/projects', 'GET');
+        const tasksData = await apiRequest('/tasks', 'GET');
+        
+        // Set counts
+        document.getElementById('project-count').textContent = projectsData.length || 0;
+        document.getElementById('task-count').textContent = tasksData.length || 0;
+        
+        // Calculate completed tasks
+        const completedTasks = tasksData.filter(task => task.status === 'done').length;
+        document.getElementById('completed-count').textContent = completedTasks || 0;
+        
+        // Load my tasks
+        const myTasksContainer = document.getElementById('my-tasks-list');
+        myTasksContainer.innerHTML = '';
+        
+        const myTasks = await apiRequest(`/tasks/assigned/${currentUser.username}`, 'GET');
+        
+        if (myTasks && myTasks.length > 0) {
+            myTasks.forEach(task => {
+                myTasksContainer.appendChild(createTaskCard(task, false));
+            });
+        } else {
+            myTasksContainer.innerHTML = '<p>No tasks assigned to you</p>';
+        }
+        
+        // Load recent projects
+        const projectsContainer = document.getElementById('recent-projects-list');
+        projectsContainer.innerHTML = '';
+        
+        const recentProjects = projectsData.slice(0, 3);
+        
+        if (recentProjects && recentProjects.length > 0) {
+            recentProjects.forEach(project => {
+                projectsContainer.appendChild(createProjectCard(project, false));
+            });
+        } else {
+            projectsContainer.innerHTML = '<p>No projects found</p>';
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+}
+
+// Projects Management
 async function loadProjects() {
     const projectsContainer = document.getElementById('projects-container');
     projectsContainer.innerHTML = '<div class="loading-indicator"><i class="fas fa-spinner fa-spin"></i> Loading projects...</div>';
-
-    try {
-        const response = await fetch(`${API_URL}/projects`);
-        if (response.ok) {
-            const projects = await response.json();
-            displayProjects(projects);
-        } else {
-            showToast('Failed to load projects', 'error');
-            projectsContainer.innerHTML = '<div class="error-message">Failed to load projects</div>';
-        }
-    } catch (error) {
-        console.error('Error loading projects:', error);
-        projectsContainer.innerHTML = '<div class="error-message">Error connecting to server</div>';
-    }
-}
-
-function displayProjects(projects) {
-    const projectsContainer = document.getElementById('projects-container');
-    const recentProjectsList = document.getElementById('recent-projects-list');
-    
-    // Update project count on dashboard
-    document.getElementById('project-count').textContent = projects.length;
-
-    if (projects.length === 0) {
-        projectsContainer.innerHTML = '<div class="empty-state">No projects found. Create your first project!</div>';
-        if (recentProjectsList) {
-            recentProjectsList.innerHTML = '<div class="empty-state">No projects found</div>';
-        }
-        return;
-    }
-
-    // Sort projects by ID (most recent first)
-    projects.sort((a, b) => b.projectid - a.projectid);
-
-    // Display in projects section
-    projectsContainer.innerHTML = projects.map(project => `
-        <div class="project-card" data-id="${project.projectid}">
-            <div class="project-header">
-                <h3 class="project-title">${project.project_name}</h3>
-                <div class="project-actions">
-                    <button class="btn btn-sm btn-outline-primary edit-project" data-id="${project.projectid}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger delete-project" data-id="${project.projectid}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-            <p class="project-description">${project.project_description}</p>
-            <div class="project-footer">
-                <span class="task-count">
-                    <i class="fas fa-tasks"></i> Tasks: <span class="task-count-value" id="project-${project.projectid}-tasks">0</span>
-                </span>
-                <button class="btn btn-sm btn-outline-primary view-tasks" data-id="${project.projectid}">
-                    View Tasks
-                </button>
-            </div>
-        </div>
-    `).join('');
-
-    // Display recent projects on dashboard
-    if (recentProjectsList) {
-        recentProjectsList.innerHTML = projects.slice(0, 3).map(project => `
-            <div class="project-card" data-id="${project.projectid}">
-                <div class="project-header">
-                    <h3 class="project-title">${project.project_name}</h3>
-                </div>
-                <p class="project-description">${project.project_description}</p>
-                <button class="btn btn-sm btn-primary view-tasks" data-id="${project.projectid}">
-                    View Tasks
-                </button>
-            </div>
-        `).join('');
-    }
-
-    // Add event listeners to project buttons
-    document.querySelectorAll('.edit-project').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const projectId = button.getAttribute('data-id');
-            const project = projects.find(p => p.projectid == projectId);
-            openProjectModal(project);
-        });
-    });
-
-    document.querySelectorAll('.delete-project').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const projectId = button.getAttribute('data-id');
-            confirmDelete('project', projectId);
-        });
-    });
-
-    document.querySelectorAll('.view-tasks').forEach(button => {
-        button.addEventListener('click', () => {
-            const projectId = button.getAttribute('data-id');
-            showSection(tasksSection);
-            projectFilter.value = projectId;
-            filterTasks();
-        });
-    });
-}
-
-async function loadProjectsDropdown() {
-    const projectDropdown = document.getElementById('task-project');
-    const filterDropdown = document.getElementById('project-filter');
     
     try {
-        const response = await fetch(`${API_URL}/projects`);
-        if (response.ok) {
-            const projects = await response.json();
-            
-            // Clear existing options except the first one
-            while (projectDropdown.options.length > 0) {
-                projectDropdown.options.remove(0);
-            }
-            
-            // Clear filter dropdown except for "All Projects" option
-            while (filterDropdown.options.length > 1) {
-                filterDropdown.options.remove(1);
-            }
-            
-            // Add projects to dropdowns
+        const projects = await apiRequest('/projects', 'GET');
+        
+        projectsContainer.innerHTML = '';
+        
+        if (projects && projects.length > 0) {
             projects.forEach(project => {
-                const option = new Option(project.project_name, project.projectid);
-                const filterOption = new Option(project.project_name, project.projectid);
-                projectDropdown.add(option);
-                filterDropdown.add(filterOption);
+                projectsContainer.appendChild(createProjectCard(project));
             });
+        } else {
+            projectsContainer.innerHTML = '<p>No projects found</p>';
         }
     } catch (error) {
-        console.error('Error loading projects for dropdown:', error);
+        projectsContainer.innerHTML = '<p>Error loading projects</p>';
+        console.error('Error loading projects:', error);
     }
+}
+
+function createProjectCard(project, showActions = true) {
+    const card = document.createElement('div');
+    card.className = 'project-card';
+    card.innerHTML = `
+        <div class="project-header">
+            <h3 class="project-title">${project.project_name}</h3>
+            ${showActions ? `
+            <div class="project-actions">
+                <button class="btn btn-sm btn-outline-primary edit-project" data-id="${project.projectid}">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger delete-project" data-id="${project.projectid}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            ` : ''}
+        </div>
+        <p class="project-description">${project.project_description}</p>
+        <div class="project-footer">
+            <span class="project-id">ID: ${project.projectid}</span>
+            <span class="task-count"><i class="fas fa-tasks"></i> <span id="project-task-count-${project.projectid}">0</span> tasks</span>
+        </div>
+    `;
+
+    // Add event listeners to action buttons if they exist
+    if (showActions) {
+        setTimeout(() => {
+            const editBtn = card.querySelector('.edit-project');
+            if (editBtn) {
+                editBtn.addEventListener('click', () => openProjectModal(project));
+            }
+            
+            const deleteBtn = card.querySelector('.delete-project');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', () => deleteProject(project.projectid));
+            }
+        }, 0);
+    }
+    
+    // Get task count for this project
+    setTimeout(async () => {
+        try {
+            const tasks = await apiRequest(`/tasks?projectid=${project.projectid}`, 'GET');
+            const countElement = document.getElementById(`project-task-count-${project.projectid}`);
+            if (countElement) {
+                countElement.textContent = tasks.length || 0;
+            }
+        } catch (error) {
+            console.error('Error fetching task count:', error);
+        }
+    }, 0);
+    
+    return card;
 }
 
 function openProjectModal(project = null) {
     const modalTitle = document.getElementById('project-modal-title');
     const projectIdInput = document.getElementById('project-id');
     const projectNameInput = document.getElementById('project-name');
-    const projectDescInput = document.getElementById('project-description');
+    const projectDescriptionInput = document.getElementById('project-description');
     
     if (project) {
         modalTitle.textContent = 'Edit Project';
         projectIdInput.value = project.projectid;
         projectNameInput.value = project.project_name;
-        projectDescInput.value = project.project_description;
+        projectDescriptionInput.value = project.project_description;
     } else {
         modalTitle.textContent = 'Add New Project';
         projectForm.reset();
@@ -370,233 +387,262 @@ async function handleProjectSubmit(e) {
     
     const projectId = document.getElementById('project-id').value;
     const projectName = document.getElementById('project-name').value;
-    const projectDesc = document.getElementById('project-description').value;
+    const projectDescription = document.getElementById('project-description').value;
     
     const projectData = {
         project_name: projectName,
-        project_description: projectDesc
+        project_description: projectDescription
     };
     
     try {
-        let response;
-        
         if (projectId) {
             // Update existing project
-            response = await fetch(`${API_URL}/projects/${projectId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(projectData)
-            });
+            await apiRequest(`/projects/${projectId}`, 'PUT', projectData);
+            showNotification('Project updated successfully', 'success');
         } else {
             // Create new project
-            response = await fetch(`${API_URL}/projects`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(projectData)
-            });
+            await apiRequest('/projects', 'POST', projectData);
+            showNotification('Project created successfully', 'success');
         }
         
-        if (response.ok) {
-            closeAllModals();
-            loadProjects();
-            loadProjectsDropdown();
-            showToast(projectId ? 'Project updated successfully!' : 'Project created successfully!', 'success');
-        } else {
-            const error = await response.json();
-            showToast(error.error || 'Failed to save project', 'error');
-        }
+        closeAllModals();
+        loadProjects();
     } catch (error) {
-        console.error('Project save error:', error);
-        showToast('Error connecting to server', 'error');
+        showNotification('Failed to save project', 'error');
+        console.error('Error saving project:', error);
     }
 }
 
 async function deleteProject(projectId) {
-    try {
-        const response = await fetch(`${API_URL}/projects/${projectId}`, {
-            method: 'DELETE'
-        });
-        
-        if (response.ok) {
+    if (confirm('Are you sure you want to delete this project? This cannot be undone.')) {
+        try {
+            await apiRequest(`/projects/${projectId}`, 'DELETE');
+            showNotification('Project deleted successfully', 'success');
             loadProjects();
-            loadProjectsDropdown();
-            showToast('Project deleted successfully!', 'success');
-        } else {
-            const error = await response.json();
-            showToast(error.error || 'Failed to delete project', 'error');
+        } catch (error) {
+            showNotification('Failed to delete project', 'error');
+            console.error('Error deleting project:', error);
         }
-    } catch (error) {
-        console.error('Project delete error:', error);
-        showToast('Error connecting to server', 'error');
     }
 }
 
-// Task Functions
-async function loadTasks(projectId = null) {
-    const todoTasks = document.getElementById('todo-tasks');
-    const inProgressTasks = document.getElementById('inprogress-tasks');
-    const doneTasks = document.getElementById('done-tasks');
-    const myTasksList = document.getElementById('my-tasks-list');
+// Tasks Management
+async function loadTasks() {
+    const todoContainer = document.getElementById('todo-tasks');
+    const inProgressContainer = document.getElementById('inprogress-tasks');
+    const doneContainer = document.getElementById('done-tasks');
     
-    // Clear task lists
-    todoTasks.innerHTML = '<div class="loading-indicator"><i class="fas fa-spinner fa-spin"></i></div>';
-    inProgressTasks.innerHTML = '<div class="loading-indicator"><i class="fas fa-spinner fa-spin"></i></div>';
-    doneTasks.innerHTML = '<div class="loading-indicator"><i class="fas fa-spinner fa-spin"></i></div>';
-    
-    if (myTasksList) {
-        myTasksList.innerHTML = '<div class="loading-indicator"><i class="fas fa-spinner fa-spin"></i> Loading tasks...</div>';
-    }
+    todoContainer.innerHTML = '<div class="loading-indicator"><i class="fas fa-spinner fa-spin"></i></div>';
+    inProgressContainer.innerHTML = '<div class="loading-indicator"><i class="fas fa-spinner fa-spin"></i></div>';
+    doneContainer.innerHTML = '<div class="loading-indicator"><i class="fas fa-spinner fa-spin"></i></div>';
     
     try {
-        let url = `${API_URL}/tasks`;
+        // Get tasks
+        const tasks = await apiRequest('/tasks', 'GET');
+        
+        // Clear containers
+        todoContainer.innerHTML = '';
+        inProgressContainer.innerHTML = '';
+        doneContainer.innerHTML = '';
+        
+        if (tasks && tasks.length > 0) {
+            tasks.forEach(task => {
+                const taskCard = createTaskCard(task);
+                
+                // Sort by status
+                switch (task.status) {
+                    case 'todo':
+                        todoContainer.appendChild(taskCard);
+                        break;
+                    case 'inprogress':
+                        inProgressContainer.appendChild(taskCard);
+                        break;
+                    case 'done':
+                        doneContainer.appendChild(taskCard);
+                        break;
+                    default:
+                        todoContainer.appendChild(taskCard);
+                }
+            });
+        } else {
+            todoContainer.innerHTML = '<p>No tasks found</p>';
+            inProgressContainer.innerHTML = '<p>No tasks in progress</p>';
+            doneContainer.innerHTML = '<p>No completed tasks</p>';
+        }
+    } catch (error) {
+        todoContainer.innerHTML = '<p>Error loading tasks</p>';
+        inProgressContainer.innerHTML = '<p>Error loading tasks</p>';
+        doneContainer.innerHTML = '<p>Error loading tasks</p>';
+        console.error('Error loading tasks:', error);
+    }
+}
+
+async function filterTasks() {
+    const projectId = document.getElementById('project-filter').value;
+    
+    const todoContainer = document.getElementById('todo-tasks');
+    const inProgressContainer = document.getElementById('inprogress-tasks');
+    const doneContainer = document.getElementById('done-tasks');
+    
+    todoContainer.innerHTML = '<div class="loading-indicator"><i class="fas fa-spinner fa-spin"></i></div>';
+    inProgressContainer.innerHTML = '<div class="loading-indicator"><i class="fas fa-spinner fa-spin"></i></div>';
+    doneContainer.innerHTML = '<div class="loading-indicator"><i class="fas fa-spinner fa-spin"></i></div>';
+    
+    try {
+        let tasks;
+        
         if (projectId) {
-            url += `?projectid=${projectId}`;
+            tasks = await apiRequest(`/tasks?projectid=${projectId}`, 'GET');
+        } else {
+            tasks = await apiRequest('/tasks', 'GET');
         }
         
-        const response = await fetch(url);
-        if (response.ok) {
-            const tasks = await response.json();
-            
-            // Update task counts
-            document.getElementById('task-count').textContent = tasks.length;
-            document.getElementById('completed-count').textContent = tasks.filter(task => task.status === 'done').length;
-            
-            // Group tasks by status
-            const todoList = tasks.filter(task => task.status === 'todo');
-            const inProgressList = tasks.filter(task => task.status === 'inprogress');
-            const doneList = tasks.filter(task => task.status === 'done');
-            
-            // Display tasks in their respective columns
-            todoTasks.innerHTML = todoList.length ? renderTaskList(todoList) : '<div class="empty-column">No tasks</div>';
-            inProgressTasks.innerHTML = inProgressList.length ? renderTaskList(inProgressList) : '<div class="empty-column">No tasks</div>';
-            doneTasks.innerHTML = doneList.length ? renderTaskList(doneList) : '<div class="empty-column">No tasks</div>';
-            
-            // Update my tasks on dashboard
-            if (myTasksList && currentUser) {
-                const myTasks = tasks.filter(task => task.assigned_to === currentUser.username);
-                myTasksList.innerHTML = myTasks.length 
-                    ? renderTaskList(myTasks.slice(0, 3)) 
-                    : '<div class="empty-state">No tasks assigned to you</div>';
-            }
-            
-            // Add event listeners to task cards
-            addTaskCardEventListeners(tasks);
-            
-            // Update project task counts
-            updateProjectTaskCounts(tasks);
+        // Clear containers
+        todoContainer.innerHTML = '';
+        inProgressContainer.innerHTML = '';
+        doneContainer.innerHTML = '';
+        
+        if (tasks && tasks.length > 0) {
+            tasks.forEach(task => {
+                const taskCard = createTaskCard(task);
+                
+                // Sort by status
+                switch (task.status) {
+                    case 'todo':
+                        todoContainer.appendChild(taskCard);
+                        break;
+                    case 'inprogress':
+                        inProgressContainer.appendChild(taskCard);
+                        break;
+                    case 'done':
+                        doneContainer.appendChild(taskCard);
+                        break;
+                    default:
+                        todoContainer.appendChild(taskCard);
+                }
+            });
         } else {
-            showToast('Failed to load tasks', 'error');
+            todoContainer.innerHTML = '<p>No tasks found</p>';
+            inProgressContainer.innerHTML = '<p>No tasks in progress</p>';
+            doneContainer.innerHTML = '<p>No completed tasks</p>';
         }
     } catch (error) {
-        console.error('Error loading tasks:', error);
-        showToast('Error connecting to server', 'error');
+        todoContainer.innerHTML = '<p>Error loading tasks</p>';
+        inProgressContainer.innerHTML = '<p>Error loading tasks</p>';
+        doneContainer.innerHTML = '<p>Error loading tasks</p>';
+        console.error('Error filtering tasks:', error);
     }
 }
 
-function renderTaskList(tasks) {
-    return tasks.map(task => `
-        <div class="task-card" data-id="${task.taskid}">
-            <div class="task-header">
-                <div class="task-title">${task.taskname}</div>
-                <div class="task-project">${task.projectid}</div>
-            </div>
-            <div class="task-description">${task.taskdescription}</div>
-            <div class="task-meta">
-                <div class="task-deadline">
-                    <i class="far fa-calendar-alt"></i> ${formatDate(task.deadline)}
-                </div>
-                <div class="task-assignee">
-                    <i class="far fa-user"></i> ${task.assigned_to}
-                </div>
-            </div>
-            <div class="task-actions mt-2">
-                <button class="btn btn-sm btn-outline-primary edit-task" data-id="${task.taskid}">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger delete-task" data-id="${task.taskid}">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
+function createTaskCard(task, showActions = true) {
+    const card = document.createElement('div');
+    card.className = 'task-card';
+    card.setAttribute('data-id', task.taskid);
+    
+    // Format date if it exists
+    const deadlineDate = task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline';
+    
+    card.innerHTML = `
+        <div class="task-header">
+            <h4 class="task-title">${task.taskname}</h4>
+            <span class="task-project">Project ID: ${task.projectid}</span>
         </div>
-    `).join('');
-}
-
-function addTaskCardEventListeners(tasks) {
-    document.querySelectorAll('.edit-task').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const taskId = button.getAttribute('data-id');
-            const task = tasks.find(t => t.taskid == taskId);
-            openTaskModal(task);
-        });
-    });
+        <p class="task-description">${task.taskdescription}</p>
+        <div class="task-meta">
+            <span class="task-deadline"><i class="far fa-calendar-alt"></i> ${deadlineDate}</span>
+            <span class="task-assignee"><i class="far fa-user"></i> ${task.assigned_to}</span>
+        </div>
+        ${showActions ? `
+        <div class="task-actions mt-2">
+            <button class="btn btn-sm btn-outline-primary edit-task" data-id="${task.taskid}">
+                <i class="fas fa-edit"></i> Edit
+            </button>
+            <button class="btn btn-sm btn-outline-danger delete-task" data-id="${task.taskid}">
+                <i class="fas fa-trash"></i> Delete
+            </button>
+        </div>
+        ` : ''}
+    `;
     
-    document.querySelectorAll('.delete-task').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const taskId = button.getAttribute('data-id');
-            confirmDelete('task', taskId);
-        });
-    });
-    
-    document.querySelectorAll('.task-card').forEach(card => {
-        card.addEventListener('click', () => {
-            const taskId = card.getAttribute('data-id');
-            const task = tasks.find(t => t.taskid == taskId);
-            openTaskModal(task);
-        });
-    });
-}
-
-function updateProjectTaskCounts(tasks) {
-    // Group tasks by project
-    const projectCounts = {};
-    tasks.forEach(task => {
-        if (!projectCounts[task.projectid]) {
-            projectCounts[task.projectid] = 0;
-        }
-        projectCounts[task.projectid]++;
-    });
-    
-    // Update count displays
-    Object.keys(projectCounts).forEach(projectId => {
-        const countElement = document.getElementById(`project-${projectId}-tasks`);
-        if (countElement) {
-            countElement.textContent = projectCounts[projectId];
-        }
-    });
-}
-
-function filterTasks() {
-    const projectId = projectFilter.value;
-    if (projectId) {
-        loadTasks(projectId);
-    } else {
-        loadTasks();
-    }
-}
-
-async function loadUsersDropdown() {
-    const assignedToDropdown = document.getElementById('task-assigned-to');
-    
-    try {
-        const response = await fetch(`${API_URL}/users`);
-        if (response.ok) {
-            const users = await response.json();
-            
-            // Clear existing options
-            while (assignedToDropdown.options.length > 0) {
-                assignedToDropdown.options.remove(0);
+    // Add event listeners to action buttons if they exist
+    if (showActions) {
+        setTimeout(() => {
+            // Edit task
+            const editBtn = card.querySelector('.edit-task');
+            if (editBtn) {
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openTaskModal(task);
+                });
             }
             
-            // Add users to dropdown
-            users.forEach(user => {
-                const option = new Option(user.username, user.username);
-                assignedToDropdown.add(option);
+            // Delete task
+            const deleteBtn = card.querySelector('.delete-task');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteTask(task.taskid);
+                });
+            }
+            
+            // Add click event to card
+            card.addEventListener('click', () => openTaskModal(task));
+        }, 0);
+    }
+    
+    return card;
+}
+
+async function loadProjectsForFilter() {
+    const projectFilter = document.getElementById('project-filter');
+    const taskProjectSelect = document.getElementById('task-project');
+    
+    try {
+        const projects = await apiRequest('/projects', 'GET');
+        
+        // Clear options except the default one
+        projectFilter.innerHTML = '<option value="">All Projects</option>';
+        taskProjectSelect.innerHTML = '<option value="">Select Project</option>';
+        
+        if (projects && projects.length > 0) {
+            projects.forEach(project => {
+                // Add to filter dropdown
+                const filterOption = document.createElement('option');
+                filterOption.value = project.projectid;
+                filterOption.textContent = project.project_name;
+                projectFilter.appendChild(filterOption);
+                
+                // Add to task form dropdown
+                const taskOption = document.createElement('option');
+                taskOption.value = project.projectid;
+                taskOption.textContent = project.project_name;
+                taskProjectSelect.appendChild(taskOption);
             });
         }
     } catch (error) {
-        console.error('Error loading users for dropdown:', error);
+        console.error('Error loading projects for filter:', error);
+    }
+}
+
+async function loadUsersForTaskAssignment() {
+    const taskAssignedToSelect = document.getElementById('task-assigned-to');
+    
+    try {
+        const users = await apiRequest('/users', 'GET');
+        
+        // Clear options
+        taskAssignedToSelect.innerHTML = '<option value="">Select User</option>';
+        
+        if (users && users.length > 0) {
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.username;
+                option.textContent = user.username;
+                taskAssignedToSelect.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading users for task assignment:', error);
     }
 }
 
@@ -604,32 +650,37 @@ function openTaskModal(task = null) {
     const modalTitle = document.getElementById('task-modal-title');
     const taskIdInput = document.getElementById('task-id');
     const taskNameInput = document.getElementById('task-name');
-    const taskDescInput = document.getElementById('task-description');
-    const taskProjectInput = document.getElementById('task-project');
-    const taskAssignedToInput = document.getElementById('task-assigned-to');
+    const taskDescriptionInput = document.getElementById('task-description');
+    const taskProjectSelect = document.getElementById('task-project');
+    const taskAssignedToSelect = document.getElementById('task-assigned-to');
     const taskDeadlineInput = document.getElementById('task-deadline');
-    const taskStatusInput = document.getElementById('task-status');
+    const taskStatusSelect = document.getElementById('task-status');
     
-    // Load dropdowns
-    loadProjectsDropdown();
-    loadUsersDropdown();
+    // Load projects and users for dropdowns
+    loadProjectsForFilter();
+    loadUsersForTaskAssignment();
     
     if (task) {
         modalTitle.textContent = 'Edit Task';
         taskIdInput.value = task.taskid;
         taskNameInput.value = task.taskname;
-        taskDescInput.value = task.taskdescription;
+        taskDescriptionInput.value = task.taskdescription;
         
-        // Set values after dropdowns are loaded
-        setTimeout(() => {
-            taskProjectInput.value = task.projectid;
-            taskAssignedToInput.value = task.assigned_to;
-            taskStatusInput.value = task.status;
-            
-            // Format date for input (YYYY-MM-DD)
+        // Set deadline if it exists
+        if (task.deadline) {
+            // Format date to YYYY-MM-DD for input
             const date = new Date(task.deadline);
             const formattedDate = date.toISOString().split('T')[0];
             taskDeadlineInput.value = formattedDate;
+        } else {
+            taskDeadlineInput.value = '';
+        }
+        
+        // Wait for options to load, then set selected values
+        setTimeout(() => {
+            taskProjectSelect.value = task.projectid;
+            taskAssignedToSelect.value = task.assigned_to;
+            taskStatusSelect.value = task.status || 'todo';
         }, 500);
     } else {
         modalTitle.textContent = 'Add New Task';
@@ -638,14 +689,7 @@ function openTaskModal(task = null) {
         
         // Set current user as assigned_by
         setTimeout(() => {
-            if (currentUser) {
-                taskAssignedToInput.value = currentUser.username;
-            }
-            
-            // Set default deadline to tomorrow
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            taskDeadlineInput.value = tomorrow.toISOString().split('T')[0];
+            taskStatusSelect.value = 'todo';
         }, 500);
     }
     
@@ -658,7 +702,7 @@ async function handleTaskSubmit(e) {
     
     const taskId = document.getElementById('task-id').value;
     const taskName = document.getElementById('task-name').value;
-    const taskDesc = document.getElementById('task-description').value;
+    const taskDescription = document.getElementById('task-description').value;
     const projectId = document.getElementById('task-project').value;
     const assignedTo = document.getElementById('task-assigned-to').value;
     const deadline = document.getElementById('task-deadline').value;
@@ -666,143 +710,113 @@ async function handleTaskSubmit(e) {
     
     const taskData = {
         taskname: taskName,
-        taskdescription: taskDesc,
-        projectid: projectId,
+        taskdescription: taskDescription,
         assigned_to: assignedTo,
         assigned_by: currentUser.username,
         deadline: deadline,
+        projectid: projectId,
         status: status
     };
     
     try {
-        let response;
-        
         if (taskId) {
             // Update existing task
-            response = await fetch(`${API_URL}/tasks/${taskId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(taskData)
-            });
+            await apiRequest(`/tasks/${taskId}`, 'PUT', taskData);
+            showNotification('Task updated successfully', 'success');
         } else {
             // Create new task
-            response = await fetch(`${API_URL}/tasks`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(taskData)
-            });
+            await apiRequest('/tasks', 'POST', taskData);
+            showNotification('Task created successfully', 'success');
         }
         
-        if (response.ok) {
-            closeAllModals();
-            loadTasks(projectFilter.value || null);
-            showToast(taskId ? 'Task updated successfully!' : 'Task created successfully!', 'success');
-        } else {
-            const error = await response.json();
-            showToast(error.error || 'Failed to save task', 'error');
-        }
+        closeAllModals();
+        loadTasks();
     } catch (error) {
-        console.error('Task save error:', error);
-        showToast('Error connecting to server', 'error');
+        showNotification('Failed to save task', 'error');
+        console.error('Error saving task:', error);
     }
 }
 
 async function deleteTask(taskId) {
-    try {
-        const response = await fetch(`${API_URL}/tasks/${taskId}`, {
-            method: 'DELETE'
-        });
-        
-        if (response.ok) {
-            loadTasks(projectFilter.value || null);
-            showToast('Task deleted successfully!', 'success');
-        } else {
-            const error = await response.json();
-            showToast(error.error || 'Failed to delete task', 'error');
+    if (confirm('Are you sure you want to delete this task? This cannot be undone.')) {
+        try {
+            await apiRequest(`/tasks/${taskId}`, 'DELETE');
+            showNotification('Task deleted successfully', 'success');
+            loadTasks();
+        } catch (error) {
+            showNotification('Failed to delete task', 'error');
+            console.error('Error deleting task:', error);
         }
-    } catch (error) {
-        console.error('Task delete error:', error);
-        showToast('Error connecting to server', 'error');
     }
 }
 
-// User Functions
+// Users Management
 async function loadUsers() {
     const usersContainer = document.getElementById('users-container');
     usersContainer.innerHTML = '<div class="loading-indicator"><i class="fas fa-spinner fa-spin"></i> Loading users...</div>';
     
     try {
-        const response = await fetch(`${API_URL}/users`);
-        if (response.ok) {
-            const users = await response.json();
-            displayUsers(users);
+        const users = await apiRequest('/users', 'GET');
+        
+        usersContainer.innerHTML = '';
+        
+        if (users && users.length > 0) {
+            users.forEach(user => {
+                usersContainer.appendChild(createUserCard(user));
+            });
         } else {
-            showToast('Failed to load users', 'error');
-            usersContainer.innerHTML = '<div class="error-message">Failed to load users</div>';
+            usersContainer.innerHTML = '<p>No users found</p>';
         }
     } catch (error) {
+        usersContainer.innerHTML = '<p>Error loading users</p>';
         console.error('Error loading users:', error);
-        usersContainer.innerHTML = '<div class="error-message">Error connecting to server</div>';
     }
 }
 
-function displayUsers(users) {
-    const usersContainer = document.getElementById('users-container');
+function createUserCard(user) {
+    const card = document.createElement('div');
+    card.className = 'user-card';
     
-    if (users.length === 0) {
-        usersContainer.innerHTML = '<div class="empty-state">No users found</div>';
-        return;
-    }
+    // Get first letter of username for avatar
+    const firstLetter = user.username.charAt(0).toUpperCase();
     
-    usersContainer.innerHTML = users.map(user => `
-        <div class="user-card">
-            <div class="user-header">
-                <div class="user-info">
-                    <div class="user-avatar">${user.username.charAt(0).toUpperCase()}</div>
-                    <div class="user-name">${user.username}</div>
-                </div>
-                <div class="user-actions">
-                    <button class="btn btn-sm btn-outline-primary edit-user" data-id="${user.username}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger delete-user" data-id="${user.username}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
+    card.innerHTML = `
+        <div class="user-header">
+            <div class="user-info">
+                <div class="user-avatar">${firstLetter}</div>
+                <span class="user-name">${user.username}</span>
             </div>
-            <div class="user-contact">
-                <div class="user-email">
-                    <i class="far fa-envelope"></i> ${user.email_Id}
-                </div>
-                <div class="user-phone">
-                    <i class="fas fa-phone"></i> ${user.phoneNumber}
-                </div>
+            <div class="user-actions">
+                <button class="btn btn-sm btn-outline-primary edit-user" data-id="${user.username}">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger delete-user" data-id="${user.username}">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
         </div>
-    `).join('');
+        <div class="user-contact">
+            <div><i class="fas fa-envelope"></i> ${user.email_Id}</div>
+            <div><i class="fas fa-phone"></i> ${user.phoneNumber}</div>
+        </div>
+    `;
     
-    // Add event listeners to user cards
-    document.querySelectorAll('.edit-user').forEach(button => {
-        button.addEventListener('click', () => {
-            const userId = button.getAttribute('data-id');
-            const user = users.find(u => u.username === userId);
-            openUserModal(user);
-        });
-    });
+    // Add event listeners
+    setTimeout(() => {
+        // Edit user
+        const editBtn = card.querySelector('.edit-user');
+        if (editBtn) {
+            editBtn.addEventListener('click', () => openUserModal(user));
+        }
+        
+        // Delete user
+        const deleteBtn = card.querySelector('.delete-user');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', () => deleteUser(user.username));
+        }
+    }, 0);
     
-    document.querySelectorAll('.delete-user').forEach(button => {
-        button.addEventListener('click', () => {
-            const userId = button.getAttribute('data-id');
-            
-            // Prevent deleting current user
-            if (userId === currentUser.username) {
-                showToast('You cannot delete your own account', 'error');
-                return;
-            }
-            
-            confirmDelete('user', userId);
-        });
-    });
+    return card;
 }
 
 function openUserModal(user = null) {
@@ -819,7 +833,7 @@ function openUserModal(user = null) {
         usernameInput.value = user.username;
         emailInput.value = user.email_Id;
         phoneInput.value = user.phoneNumber;
-        passwordInput.value = user.password;
+        passwordInput.value = user.password || '';
     } else {
         modalTitle.textContent = 'Add New User';
         userForm.reset();
@@ -847,10 +861,101 @@ async function handleUserSubmit(e) {
     };
     
     try {
-        let response;
-        
         if (userId) {
             // Update existing user
-            response = await fetch(`${API_URL}/users/${userId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+            await apiRequest(`/users/${userId}`, 'PUT', userData);
+            showNotification('User updated successfully', 'success');
+            
+            // Update current user if editing themselves
+            if (currentUser && currentUser.username === userId) {
+                currentUser = { ...currentUser, ...userData };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                document.getElementById('username').textContent = currentUser.username;
+            }
+        } else {
+            // Create new user
+            await apiRequest('/users', 'POST', userData);
+            showNotification('User created successfully', 'success');
+        }
+        
+        closeAllModals();
+        loadUsers();
+    } catch (error) {
+        showNotification('Failed to save user', 'error');
+        console.error('Error saving user:', error);
+    }
+}
+
+    async function deleteUser(username) {
+    if (confirm('Are you sure you want to delete this user? This cannot be undone.')) {
+        try {
+            await apiRequest(`/users/${username}`, 'DELETE');
+            showNotification('User deleted successfully', 'success');
+            loadUsers();
+            
+            // If the deleted user is the current user, log them out
+            if (currentUser && currentUser.username === username) {
+                handleLogout();
+            }
+        } catch (error) {
+            showNotification('Failed to delete user', 'error');
+            console.error('Error deleting user:', error);
+        }
+    }
+}
+
+// Notification Function
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas ${getNotificationIcon(type)}"></i>
+            <span>${message}</span>
+        </div>
+        <button class="close-notification">×</button>
+    `;
+    
+    // Append to body
+    document.body.appendChild(notification);
+    
+    // Add event listener to close button
+    const closeBtn = notification.querySelector('.close-notification');
+    closeBtn.addEventListener('click', () => {
+        notification.remove();
+    });
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        notification.classList.add('fade-out');
+        setTimeout(() => {
+            notification.remove();
+        }, 500);
+    }, 5000);
+}
+
+// Helper function to get notification icon
+function getNotificationIcon(type) {
+    switch (type) {
+        case 'success':
+            return 'fa-check-circle';
+        case 'error':
+            return 'fa-exclamation-circle';
+        case 'warning':
+            return 'fa-exclamation-triangle';
+        default:
+            return 'fa-info-circle';
+    }
+}
+
+// Modal Management
+function closeAllModals() {
+    modalOverlay.style.display = 'none';
+    projectModal.style.display = 'none';
+    taskModal.style.display = 'none';
+    userModal.style.display = 'none';
+}
+
+// Initialize the app when the page loads
+document.addEventListener('DOMContentLoaded', initApp);
