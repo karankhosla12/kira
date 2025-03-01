@@ -964,5 +964,29 @@ function closeAllModals() {
 
 
 
-// Initialize the app when the page loads
-document.addEventListener('DOMContentLoaded', initApp);
+// In app.js, initially hide the sidebar and show only auth section
+document.addEventListener('DOMContentLoaded', function() {
+  // Initially hide the sidebar
+  document.querySelector('.sidebar').classList.add('hidden');
+  
+  // Show only the auth section by default
+  document.getElementById('auth-section').classList.remove('hidden');
+  document.getElementById('dashboard-section').classList.add('hidden');
+  document.getElementById('projects-section').classList.add('hidden');
+  document.getElementById('tasks-section').classList.add('hidden');
+  document.getElementById('users-section').classList.add('hidden');
+  
+  // After successful login
+  document.getElementById('login-form-element').addEventListener('submit', function(e) {
+    e.preventDefault();
+    // Your login validation code here
+    
+    // On successful login:
+    document.querySelector('.sidebar').classList.remove('hidden');
+    document.getElementById('auth-section').classList.add('hidden');
+    document.getElementById('dashboard-section').classList.remove('hidden');
+    
+    // Update user info in sidebar
+    document.getElementById('username').textContent = 'Logged User Name';
+  });
+});
