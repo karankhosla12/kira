@@ -962,7 +962,10 @@ function closeAllModals() {
     userModal.style.display = 'none';
 }
 
-
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    sidebar.classList.toggle('hidden-mobile');
+}
 
 // Initialize the app when the page loads
 document.addEventListener('DOMContentLoaded', initApp);
