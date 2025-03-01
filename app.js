@@ -134,7 +134,7 @@ async function handleLogin(e) {
     const password = document.getElementById('login-password').value;
     
     try {
-        const user = await apiRequest('/login', 'POST', { email_Id: email, password });
+        const user = await apiRequest('/login', 'POST', { email_Id: email, password: password });
         
         if (user && !user.error) {
             currentUser = user;
