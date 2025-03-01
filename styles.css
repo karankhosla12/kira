@@ -477,7 +477,7 @@ body {
     margin-right: 8px;
 }
 
-/* Modal Styles */
+/* Modal Overlay */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -486,7 +486,44 @@ body {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     display: none;
+    justify-content: center;
+    align-items: center;
     z-index: 1000;
+}
+
+/* Modal Box */
+.modal {
+    background-color: white;
+    border-radius: 8px;
+    width: 500px;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: none;
+    position: relative;
+}
+
+/* Modal Header */
+.modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Modal Body */
+.modal-body {
+    padding: 20px;
+}
+
+/* Modal Buttons */
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
 }
 
 .modal {
@@ -505,13 +542,7 @@ body {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.modal-header {
-    padding: 15px 20px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+
 
 .modal-header h2 {
     font-size: 18px;
@@ -530,12 +561,7 @@ body {
     padding: 20px;
 }
 
-.modal-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-}
+
 
 /* Loading Indicator */
 .loading-indicator {
