@@ -297,6 +297,11 @@
                         <textarea id="project-description" class="form-control" rows="3" required aria-required="true" minlength="10"></textarea>
                         <div class="invalid-feedback">Description is required (minimum 10 characters).</div>
                     </div>
+                     <div class="form-group mb-3">
+                        <label for="project-name">Project ID</label>
+                        <input type="text" id="project-id" class="form-control" required aria-required="true" minlength="3" maxlength="100">
+                        <div class="invalid-feedback">Project ID is required (3-100 characters).</div>
+                    </div>
                     
                     <div class="form-group modal-buttons">
                         <button type="button" class="btn btn-secondary cancel-btn">Cancel</button>
