@@ -485,23 +485,14 @@ body {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    display: none;
+    display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
 }
 
-.modal-overlay.active {
-    display: flex;
-}
-
 /* Modal Box */
 .modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    align-items: center;
-    transform: translate(-50%, -50%);
     background-color: white;
     border-radius: 8px;
     width: 500px;
@@ -509,8 +500,22 @@ body {
     max-height: 90vh;
     overflow-y: auto;
     z-index: 1001;
-    display: none;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+    /* Ensures the modal is centered */
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+}
+
+/* Ensure modal is only shown when active */
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal.active {
+    display: block;
 }
 
 .modal.active {
@@ -541,13 +546,7 @@ body {
 
 /* Modal Body */
 .modal-body {
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh; 
-
-
+    padding: 20px;
 }
 
 /* Modal Buttons */
