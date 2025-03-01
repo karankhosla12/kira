@@ -42,10 +42,10 @@
             <!-- Authentication Section -->
             <section id="auth-section" class="content-section">
                 <div class="auth-container">
-                    <div class="tab-headers" role="tablist">
-                        <button class="tab-btn active" id="login-tab" role="tab" aria-selected="true" aria-controls="login-form" aria-hidden="true">Login</button>
-                        <button class="tab-btn" id="register-tab" role="tab" aria-selected="false" aria-controls="register-form" aria-hidden="true">Register</button>
-                    </div>
+                    <div class="tab-headers hidden" role="tablist">
+    <button class="tab-btn active" id="login-tab" role="tab" aria-selected="true" aria-controls="login-form">Login</button>
+    <button class="tab-btn" id="register-tab" role="tab" aria-selected="false" aria-controls="register-form">Register</button>
+</div>
                     <div class="tab-content">
                         <div id="login-form" class="auth-form active" role="tabpanel" aria-labelledby="login-tab">
                             <h2>Login to Kira</h2>
@@ -70,9 +70,7 @@
                                     <label class="form-check-label" for="remember-me">Remember me</label>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Login</button>
-                                <div class="mt-3">
-                                    <a href="#" id="forgot-password">Forgot password?</a>
-                                </div>
+                               
                             </form>
                         </div>
                         <div id="register-form" class="auth-form" role="tabpanel" aria-labelledby="register-tab" hidden>
