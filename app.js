@@ -363,7 +363,7 @@ function createProjectCard(project, showActions = true) {
 
 function openProjectModal(project = null) {
     const modalTitle = document.getElementById('project-modal-title');
-    const projectIdInput = document.getElementById('project-id');
+    const projectIdInput = document.getElementById('projectid');
     const projectNameInput = document.getElementById('project-name');
     const projectDescriptionInput = document.getElementById('project-description');
     
