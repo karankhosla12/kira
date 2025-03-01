@@ -962,9 +962,7 @@ function closeModal() {
     document.getElementById('project-modal').style.display = 'none';
 }
 
-// Example usage:
-document.querySelector('.open-modal-button').addEventListener('click', openModal);
-document.querySelector('.close-modal-button').addEventListener('click', closeModal);
+
 
 // Initialize the app when the page loads
 document.addEventListener('DOMContentLoaded', initApp);
