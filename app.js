@@ -385,7 +385,7 @@ function openProjectModal(project = null) {
 async function handleProjectSubmit(e) {
     e.preventDefault();
     
-    const projectId = document.getElementById('project-id').value;
+    const projectId = document.getElementById('projectid').value;
     const projectName = document.getElementById('project-name').value;
     const projectDescription = document.getElementById('project-description').value;
     
@@ -397,10 +397,7 @@ async function handleProjectSubmit(e) {
     
     try {
         if (projectId) {
-            // Update existing project
-            await apiRequest(`/projects/${projectId}`, 'PUT', projectData);
-            showNotification('Project updated successfully', 'success');
-        } else {
+        
             // Create new project
             await apiRequest('/projects', 'POST', projectData);
             showNotification('Project created successfully', 'success');
