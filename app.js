@@ -957,9 +957,11 @@ function openModal() {
     document.getElementById('project-modal').style.display = 'block';
 }
 
-function closeModal() {
-    document.getElementById('modal-overlay').style.display = 'none';
-    document.getElementById('project-modal').style.display = 'none';
+function closeAllModals() {
+    modalOverlay.style.display = 'none';
+    projectModal.style.display = 'none';
+    taskModal.style.display = 'none';
+    userModal.style.display = 'none';
 }
 
 
