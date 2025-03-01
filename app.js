@@ -950,12 +950,21 @@ function getNotificationIcon(type) {
 }
 
 // Modal Management
-function closeAllModals() {
-    modalOverlay.style.display = 'none';
-    projectModal.style.display = 'none';
-    taskModal.style.display = 'none';
-    userModal.style.display = 'none';
+
+
+function openModal() {
+    document.getElementById('modal-overlay').style.display = 'flex';
+    document.getElementById('project-modal').style.display = 'block';
 }
+
+function closeModal() {
+    document.getElementById('modal-overlay').style.display = 'none';
+    document.getElementById('project-modal').style.display = 'none';
+}
+
+// Example usage:
+document.querySelector('.open-modal-button').addEventListener('click', openModal);
+document.querySelector('.close-modal-button').addEventListener('click', closeModal);
 
 // Initialize the app when the page loads
 document.addEventListener('DOMContentLoaded', initApp);
