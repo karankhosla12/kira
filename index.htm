@@ -35,45 +35,47 @@
             </div>
         </nav>
 
-        <!-- Main Content Area -->
-        <main class="main-content">
-            <!-- Authentication Section -->
-            <section id="auth-section" class="content-section">
-                <div class="auth-container">
-                  
-                    <div class="tab-content">
-                        <div id="login-form" class="auth-form active" role="tabpanel" aria-labelledby="login-tab">
-                            <h2>Login to Kira</h2>
-                            <form id="login-form-element" novalidate>
-                                <div class="form-group mb-3">
-                                    <label for="login-email">Email</label>
-                                    <input type="email" id="login-email" class="form-control" required aria-required="true">
-                                    <div class="invalid-feedback">Please enter a valid email address.</div>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="login-password">Password</label>
-                                    <div class="input-group">
-                                        <input type="password" id="login-password" class="form-control" required aria-required="true" minlength="8">
-                                        <button class="btn btn-outline-secondary toggle-password" type="button" aria-label="Show password">
-                                            <i class="fas fa-eye" aria-hidden="true"></i>
-                                        </button>
-                                    </div>
-                                    <div class="invalid-feedback">Password is required.</div>
-                                </div>
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="remember-me">
-                                    <label class="form-check-label" for="remember-me">Remember me</label>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Login</button>
-                                
-                            </form>
+       <!-- Main Content Area -->
+<main class="main-content">
+    <!-- Authentication Section -->
+    <section id="auth-section" class="content-section">
+        <div class="auth-container">
+            <div class="tab-content">
+                <!-- Login Form -->
+                <div id="login-form" class="auth-form active">
+                    <h2>Login to TarksFlow</h2>
+                    <form id="login-form-element" method="POST" action="/login" novalidate>
+                        <div class="form-group mb-3">
+                            <label for="login-email">Email</label>
+                            <input type="email" id="login-email" class="form-control" required 
+                                   aria-required="true">
                         </div>
-
-                     </div>
-                </div> 
-            </section>
-        </main> 
+                        <div class="form-group mb-3">
+                            <label for="login-password">Password</label>
+                            <div class="input-group">
+                                <input type="password" id="login-password" class="form-control" required 
+                                       aria-required="true" minlength="8">
+                                <button class="btn btn-outline-secondary toggle-password" type="button" aria-label="Show password">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback">Password is required.</div>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="remember-me">
+                            <label class="form-check-label" for="remember-me">Remember me</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
                        
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+
+      
                         
                       
 
