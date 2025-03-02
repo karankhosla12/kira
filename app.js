@@ -206,6 +206,7 @@ function showLoggedInUI() {
     tasksLink.classList.remove('hidden');
     projectsLink.classList.remove('hidden');
     document.getElementById('username').textContent = currentUser.username;
+    location.reload();
 }
 
 function navigateTo(section) {
