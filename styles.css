@@ -33,6 +33,11 @@ body {
     display: flex;
     min-height: 100vh;
 }
+.aria-hidden
+{
+    display: none;
+}
+    
 
 /* Sidebar Styles */
 .sidebar {
