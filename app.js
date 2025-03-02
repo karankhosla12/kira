@@ -200,11 +200,12 @@ function showLoginUI() {
 }
 
 function showLoggedInUI() {
-    authSection.classList.remove('hidden');
+    authSection.classList.add('hidden');
     dashboardLink.classList.remove('hidden');
     usersLink.classList.remove('hidden');
     tasksLink.classList.remove('hidden');
     projectsLink.classList.remove('hidden');
+    
     document.getElementById('username').textContent = currentUser.username;
 
 }
