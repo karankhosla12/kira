@@ -188,6 +188,13 @@ function showLoginUI() {
     projectsSection.classList.add('hidden');
     tasksSection.classList.add('hidden');
     usersSection.classList.add('hidden');
+    dashboardLink.classList.add('hidden');
+    usersLink.classList.add('hidden');
+    tasksLink.classList.add('hidden');
+    projectsLink.classList.add('hidden');
+    
+    
+    
     
     document.getElementById('username').textContent = 'Guest';
 }
