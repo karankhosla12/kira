@@ -593,8 +593,8 @@ async function loadUserFilter() {
         if (users && users.length > 0) {
             users.forEach(user => {
                 const option = document.createElement('option');
-                option.value = user.id;
-                option.textContent = user.name || user.username;
+                option.value = user.username;
+                option.textContent =  user.username;
                 userFilter.appendChild(option);
             });
         }
