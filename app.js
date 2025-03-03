@@ -504,6 +504,7 @@ async function loadTasks() {
 
 async function filterTasks() {
     const projectId = document.getElementById('project-filter').value;
+    const userId = document.getElementById('user-filter').value;
     
     const todoContainer = document.getElementById('todo-tasks');
     const inProgressContainer = document.getElementById('inprogress-tasks');
@@ -514,13 +515,22 @@ async function filterTasks() {
     doneContainer.innerHTML = '<div class="loading-indicator"><i class="fas fa-spinner fa-spin"></i></div>';
     
     try {
-        let tasks;
+        let url = '/tasks';
+        const params = [];
         
         if (projectId) {
-            tasks = await apiRequest(`/tasks?projectid=${projectId}`, 'GET');
-        } else {
-            tasks = await apiRequest('/tasks', 'GET');
+            params.push(`projectid=${projectId}`);
         }
+        
+        if (userId) {
+            params.push(`userid=${userId}`);
+        }
+        
+        if (params.length > 0) {
+            url += `?${params.join('&')}`;
+        }
+        
+        const tasks = await apiRequest(url, 'GET');
         
         // Clear containers
         todoContainer.innerHTML = '';
@@ -574,6 +584,36 @@ async function filterTasks() {
     }
 }
 
+// Function to load users for the filter dropdown
+async function loadUserFilter() {
+    try {
+        const users = await apiRequest('/users', 'GET');
+        const userFilter = document.getElementById('user-filter');
+        
+        if (users && users.length > 0) {
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = user.name || user.username;
+                userFilter.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading users for filter:', error);
+    }
+}
+
+// Project filter and User filter for tasks
+document.getElementById('project-filter').addEventListener('change', filterTasks);
+document.getElementById('user-filter').addEventListener('change', filterTasks);
+
+// Initialize filters when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    // Your existing code to load projects...
+    
+    // Add code to load users for the filter
+    loadUserFilter();
+});
 function createTaskCard(task, showActions = true) {
     const card = document.createElement('div');
     card.className = 'task-card';
