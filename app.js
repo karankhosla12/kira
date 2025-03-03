@@ -523,8 +523,7 @@ async function filterTasks() {
         }
         
         if (userId) {
-            let url = '/assigned';
-            url = url+(`/${userId}`);
+            url = `/assigned/${userId}`; // Override the URL for user-specific tasks
         }
         
         if (params.length > 0) {
