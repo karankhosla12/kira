@@ -293,6 +293,17 @@ body {
     .action-buttons {
         width: 100%;
     }
+    .sidebar {
+    width: 350px;
+    background-color: var(--sidebar-color);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    position: fixed;
+    height: 100vh;
+}
+
     
     #add-project-btn, #add-task-btn, #add-user-btn {
         width: 100%;
