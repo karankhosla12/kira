@@ -300,7 +300,7 @@ body {
         position: fixed;
         top: 0;
         left: 0;
-        height: 90vh; /* Full viewport height */
+        height: 80vh; /* Full viewport height */
         width: 300px; /* Default width */
         max-width: 30vw; /* Ensure it never exceeds 30% of screen width */
         overflow-y: auto; /* Enable vertical scrolling */
