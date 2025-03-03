@@ -268,7 +268,7 @@ async function loadDashboard() {
         const myTasksContainer = document.getElementById('my-tasks-list');
         myTasksContainer.innerHTML = '';
         
-        const myTasks = await apiRequest(`/tasks/assigned/${currentUser.username}`, 'GET');
+        const myTasks = await apiRequest(`/assigned/${currentUser.username}`, 'GET');
         
         if (myTasks && myTasks.length > 0) {
             myTasks.forEach(task => {
