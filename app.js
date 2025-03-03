@@ -524,7 +524,7 @@ async function filterTasks() {
         
         if (userId) {
             let url = '/assigned';
-            params.push(`userid=${userId}`);
+            params.push(`/${userId}`);
         }
         
         if (params.length > 0) {
