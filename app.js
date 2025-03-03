@@ -975,6 +975,34 @@ function closeAllModals() {
     userModal.style.display = 'none';
 }
 
+// Sidebar Toggle Elements
+const sidebar = document.querySelector('.sidebar');
+const sidebarToggle = document.createElement('button');
+sidebarToggle.classList.add('sidebar-toggle');
+sidebarToggle.innerHTML = '☰';
+document.body.appendChild(sidebarToggle);
+
+// Show the toggle button only on mobile
+function updateSidebarVisibility() {
+    if (window.innerWidth <= 576) {
+        sidebarToggle.style.display = 'block';
+        sidebar.classList.remove('open');
+    } else {
+        sidebarToggle.style.display = 'none';
+        sidebar.classList.add('open');
+    }
+}
+
+// Toggle Sidebar on Button Click
+sidebarToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+});
+
+// Update visibility on page load and resize
+window.addEventListener('resize', updateSidebarVisibility);
+document.addEventListener('DOMContentLoaded', updateSidebarVisibility);
+
+
 
 
 document.addEventListener('DOMContentLoaded', initApp);
