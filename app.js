@@ -437,7 +437,6 @@ async function deleteProject(projectId) {
     }
 }
 
-// Tasks Management
 async function loadTasks() {
     const todoContainer = document.getElementById('todo-tasks');
     const inProgressContainer = document.getElementById('inprogress-tasks');
@@ -456,23 +455,32 @@ async function loadTasks() {
         inProgressContainer.innerHTML = '';
         doneContainer.innerHTML = '';
         
+        // Initialize counters
+        let todoCount = 0;
+        let inProgressCount = 0;
+        let doneCount = 0;
+        
         if (tasks && tasks.length > 0) {
             tasks.forEach(task => {
                 const taskCard = createTaskCard(task);
                 
-                // Sort by status
+                // Sort by status and increment counters
                 switch (task.status) {
                     case 'todo':
                         todoContainer.appendChild(taskCard);
+                        todoCount++;
                         break;
                     case 'inprogress':
                         inProgressContainer.appendChild(taskCard);
+                        inProgressCount++;
                         break;
                     case 'done':
                         doneContainer.appendChild(taskCard);
+                        doneCount++;
                         break;
                     default:
                         todoContainer.appendChild(taskCard);
+                        todoCount++;
                 }
             });
         } else {
@@ -480,6 +488,12 @@ async function loadTasks() {
             inProgressContainer.innerHTML = '<p>No tasks in progress</p>';
             doneContainer.innerHTML = '<p>No completed tasks</p>';
         }
+        
+        // Update the count badges
+        document.querySelector('#todo-heading .task-count').textContent = todoCount;
+        document.querySelector('#inprogress-heading .task-count').textContent = inProgressCount;
+        document.querySelector('#done-heading .task-count').textContent = doneCount;
+        
     } catch (error) {
         todoContainer.innerHTML = '<p>Error loading tasks</p>';
         inProgressContainer.innerHTML = '<p>Error loading tasks</p>';
@@ -513,23 +527,32 @@ async function filterTasks() {
         inProgressContainer.innerHTML = '';
         doneContainer.innerHTML = '';
         
+        // Initialize counters
+        let todoCount = 0;
+        let inProgressCount = 0;
+        let doneCount = 0;
+        
         if (tasks && tasks.length > 0) {
             tasks.forEach(task => {
                 const taskCard = createTaskCard(task);
                 
-                // Sort by status
+                // Sort by status and increment counters
                 switch (task.status) {
                     case 'todo':
                         todoContainer.appendChild(taskCard);
+                        todoCount++;
                         break;
                     case 'inprogress':
                         inProgressContainer.appendChild(taskCard);
+                        inProgressCount++;
                         break;
                     case 'done':
                         doneContainer.appendChild(taskCard);
+                        doneCount++;
                         break;
                     default:
                         todoContainer.appendChild(taskCard);
+                        todoCount++;
                 }
             });
         } else {
@@ -537,6 +560,12 @@ async function filterTasks() {
             inProgressContainer.innerHTML = '<p>No tasks in progress</p>';
             doneContainer.innerHTML = '<p>No completed tasks</p>';
         }
+        
+        // Update the count badges
+        document.querySelector('#todo-heading .task-count').textContent = todoCount;
+        document.querySelector('#inprogress-heading .task-count').textContent = inProgressCount;
+        document.querySelector('#done-heading .task-count').textContent = doneCount;
+        
     } catch (error) {
         todoContainer.innerHTML = '<p>Error loading tasks</p>';
         inProgressContainer.innerHTML = '<p>Error loading tasks</p>';
