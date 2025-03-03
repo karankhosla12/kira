@@ -293,15 +293,28 @@ body {
     .action-buttons {
         width: 100%;
     }
+ 
     .sidebar {
-    width: 350px;
-    background-color: var(--sidebar-color);
-    color: white;
-    display: flex;
-    flex-direction: column;
-    padding: 20px 0;
+        transform: translateX(-100%); /* Hide sidebar by default */
+        position: fixed;
+    }
+
+    .sidebar.open {
+        transform: translateX(0); /* Show sidebar when open */
+    }
+
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
     position: fixed;
-    height: 100vh;
+    top: 10px;
+    left: 10px;
+    background: var(--sidebar-color);
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 1000;
 }
 
     
