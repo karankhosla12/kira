@@ -704,82 +704,28 @@ async function loadProjectsForFilter() {
     }
 }
 
-// Function to validate the Project Name and Project ID fields
-function validateProjectFields() {
+// Function to check if required fields are filled and valid
+function validateRequiredFields() {
   const projectName = document.getElementById('project-name');
   const projectId = document.getElementById('projectid');
-  const submitButton = document.querySelector('button[type="submit"]');
+  const saveButton = document.querySelector('button[type="submit"]');
   
-  // Check if both fields have valid values
-  const isNameValid = projectName.value.trim().length >= 3 && projectName.value.trim().length <= 100;
-  const isIdValid = projectId.value.trim().length >= 3 && projectId.value.trim().length <= 100;
+  // Check if both fields have valid values (minimum 3 characters)
+  const isNameValid = projectName.value.trim().length >= 3;
+  const isIdValid = projectId.value.trim().length >= 3;
   
-  // Only enable submit button if both fields are valid
-  submitButton.disabled = !(isNameValid && isIdValid);
-  
-  // Optional: Add visual indicators
-  if (isNameValid) {
-    projectName.classList.remove('is-invalid');
-    projectName.classList.add('is-valid');
-  } else {
-    projectName.classList.remove('is-valid');
-    projectName.classList.add('is-invalid');
-  }
-  
-  if (isIdValid) {
-    projectId.classList.remove('is-invalid');
-    projectId.classList.add('is-valid');
-  } else {
-    projectId.classList.remove('is-valid');
-    projectId.classList.add('is-invalid');
-  }
-}
-
-// Form submission handler function
-function handleFormSubmit(event) {
-  event.preventDefault();
-  
-  const projectName = document.getElementById('project-name');
-  const projectId = document.getElementById('projectid');
-  const form = document.getElementById('project-form');
-  
-  // Check validity again before proceeding
-  if (projectName.value.trim().length >= 3 && projectId.value.trim().length >= 3) {
-    // Form is valid, process it
-    console.log('Form is valid, processing data...');
-    // form.submit(); // Uncomment to actually submit the form
-  } else {
-    // Show validation messages by adding was-validated class
-    form.classList.add('was-validated');
-  }
-}
-
-// Function to reset the form
-function resetForm() {
-  const form = document.getElementById('project-form');
-  const submitButton = document.querySelector('button[type="submit"]');
-  
-  form.reset();
-  form.classList.remove('was-validated');
-  document.getElementById('project-name').classList.remove('is-valid', 'is-invalid');
-  document.getElementById('projectid').classList.remove('is-valid', 'is-invalid');
-  submitButton.disabled = true;
+  // Only enable save button if both fields are valid
+  saveButton.disabled = !(isNameValid && isIdValid);
 }
 
 // Add event listeners when the DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-  // Initially disable the submit button
+  // Initially disable the save button
   document.querySelector('button[type="submit"]').disabled = true;
   
   // Add input event listeners to the required fields
-  document.getElementById('project-name').addEventListener('input', validateProjectFields);
-  document.getElementById('projectid').addEventListener('input', validateProjectFields);
-  
-  // Add submit event listener to the form
-  document.getElementById('project-form').addEventListener('submit', handleFormSubmit);
-  
-  // Add click event listener to the cancel button
-  document.querySelector('.cancel-btn').addEventListener('click', resetForm);
+  document.getElementById('project-name').addEventListener('input', validateRequiredFields);
+  document.getElementById('projectid').addEventListener('input', validateRequiredFields);
 });
 
 async function loadUsersForTaskAssignment() {
