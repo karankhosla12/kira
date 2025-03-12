@@ -359,17 +359,18 @@ function createProjectCard(project, showActions = true) {
     }
     
     // Get task count for this project
-    setTimeout(async () => {
-        try {
-            const tasks = await apiRequest(`/tasks?projectid=${project.projectid}`, 'GET');
-            const countElement = document.getElementById(`project-task-count-${project.projectid}`);
-            if (countElement) {
-                countElement.textContent = tasks.length || 0;
-            }
-        } catch (error) {
-            console.error('Error fetching task count:', error);
+   setTimeout(async () => {
+    try {
+        const response = await apiRequest(`/tasks?projectid=${project.projectid}`, 'GET');
+        const tasks = Array.isArray(response) ? response : [];
+        const countElement = document.getElementById(`project-task-count-${project.projectid}`);
+        if (countElement) {
+            countElement.textContent = tasks.length || 0;
         }
-    }, 0);
+    } catch (error) {
+        console.error('Error fetching task count:', error);
+    }
+}, 0);
     
     return card;
 }
